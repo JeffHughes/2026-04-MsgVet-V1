@@ -3,72 +3,101 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MsgVet &mdash; Product Requirements Document</title>
+<title>MsgVet — Product Requirements Document</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 <style>
-  :root {
-    --bg: #0d1117; --surface: #161b22; --border: #30363d; --text: #c9d1d9;
-    --heading: #f0f6fc; --accent: #58a6ff; --accent2: #3fb950; --warn: #d29922;
-    --red: #f85149; --purple: #bc8cff; --code-bg: #1c2128;
-    --tag-bg: #1f6feb22; --tag-border: #1f6feb;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-    background: var(--bg); color: var(--text); line-height: 1.7; padding: 0; }
-  .container { max-width: 1100px; margin: 0 auto; padding: 40px 32px; }
-  nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px;
-    display: flex; gap: 16px; flex-wrap: wrap; align-items: center; position: sticky; top: 0; z-index: 10; }
-  nav .brand { font-weight: 700; color: var(--accent); font-size: 16px; margin-right: auto; }
-  nav a { color: #8b949e; font-size: 13px; text-decoration: none; }
-  nav a:hover, nav a.active { color: var(--text); }
-  h1 { color: var(--heading); font-size: 2.4em; margin-bottom: 8px; border-bottom: 2px solid var(--accent); padding-bottom: 12px; }
-  h2 { color: var(--accent); font-size: 1.6em; margin-top: 48px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-  h3 { color: var(--heading); font-size: 1.2em; margin-top: 28px; margin-bottom: 10px; }
-  h4 { color: var(--accent2); font-size: 1em; margin-top: 20px; margin-bottom: 8px; }
-  p { margin-bottom: 14px; }
-  a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
-  ul, ol { margin-left: 24px; margin-bottom: 14px; }
-  li { margin-bottom: 6px; }
-  code { background: var(--code-bg); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; color: var(--accent); }
-  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px;
-    overflow-x: auto; margin-bottom: 16px; font-size: 0.85em; line-height: 1.5; color: var(--text); }
-  pre code { background: none; padding: 0; color: inherit; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-  th, td { padding: 10px 14px; border: 1px solid var(--border); text-align: left; font-size: 0.9em; }
-  th { background: var(--surface); color: var(--heading); font-weight: 600; }
-  td { background: var(--bg); }
-  .tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); color: var(--accent);
-    padding: 2px 10px; border-radius: 12px; font-size: 0.8em; margin-right: 6px; margin-bottom: 4px; }
-  .tag-red { border-color: var(--red); color: var(--red); background: #f8514922; }
-  .tag-green { border-color: var(--accent2); color: var(--accent2); background: #3fb95022; }
-  .tag-warn { border-color: var(--warn); color: var(--warn); background: #d2992222; }
-  .tag-purple { border-color: var(--purple); color: var(--purple); background: #bc8cff22; }
-  .callout { background: var(--surface); border-left: 4px solid var(--accent); padding: 16px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
-  .callout.vision { border-left-color: var(--accent2); }
-  .callout.warn { border-left-color: var(--warn); }
-  .callout.critical { border-left-color: var(--red); }
-  .meta { color: #8b949e; font-size: 0.85em; margin-bottom: 32px; }
-  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px 28px; margin: 24px 0; }
-  .toc ol { margin-left: 20px; } .toc li { margin-bottom: 4px; }
-  .diagram { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px;
-    font-family: 'Courier New', monospace; font-size: 0.8em; line-height: 1.4; white-space: pre; overflow-x: auto; margin: 16px 0; }
-  .hero-formula { background: linear-gradient(135deg, #1f6feb33, #3fb95022); border: 3px solid var(--accent);
-    border-radius: 16px; padding: 40px 32px; margin: 32px 0; text-align: center; }
-  .hero-formula .formula { font-size: 1.6em; font-weight: 800; color: var(--heading); line-height: 1.6; }
-  .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin: 24px 0; }
-  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
-  .stat .num { font-size: 28px; font-weight: 700; color: var(--accent); } .stat .label { font-size: 12px; color: #8b949e; }
-  .milestone { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin: 12px 0; }
-  .milestone h4 { margin-top: 0; }
-  .pipeline { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px;
-    font-family: 'Courier New', monospace; font-size: 0.82em; line-height: 1.5; white-space: pre; overflow-x: auto; margin: 16px 0; }
-  footer { text-align: center; padding: 24px; color: #8b949e; font-size: 12px; border-top: 1px solid var(--border); margin-top: 48px; }
-  .tier-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin: 20px 0; }
-  .tier-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
-  .tier-card h4 { margin-top: 0; font-size: 1.1em; }
-  .tier-card .tier-tag { font-size: 0.75em; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
-  .kid { border-left: 3px solid var(--accent2); }
-  .adult { border-left: 3px solid var(--accent); }
-  .corp { border-left: 3px solid var(--purple); }
+:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#c9d1d9;--heading:#f0f6fc;--accent:#58a6ff;--accent2:#3fb950;--warn:#d29922;--red:#f85149;--purple:#bc8cff;--code-bg:#1c2128;--tag-bg:#1f6feb22;--tag-border:#1f6feb}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:15px}
+.container{max-width:1100px;margin:0 auto;padding:16px}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+
+/* NAV */
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:100}
+nav .brand{font-weight:700;color:var(--accent);font-size:15px;margin-right:auto}
+nav a{color:#8b949e;font-size:13px;text-decoration:none}nav a:hover,nav a.active{color:var(--text)}
+
+/* TYPOGRAPHY — mobile first */
+h1{color:var(--heading);font-size:1.6em;margin-bottom:6px;border-bottom:2px solid var(--accent);padding-bottom:8px}
+h2{color:var(--accent);font-size:1.3em;margin-top:36px;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:6px}
+h3{color:var(--heading);font-size:1.1em;margin-top:22px;margin-bottom:8px}
+h4{color:var(--accent2);font-size:1em;margin-top:16px;margin-bottom:6px}
+p{margin-bottom:12px}
+ul,ol{margin-left:20px;margin-bottom:12px}li{margin-bottom:4px}
+code{background:var(--code-bg);padding:2px 5px;border-radius:3px;font-size:.85em;color:var(--accent)}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:12px;overflow-x:auto;margin-bottom:14px;font-size:.82em;line-height:1.5;color:var(--text)}
+pre code{background:none;padding:0;color:inherit}
+
+/* TABLES — responsive */
+.table-wrap{overflow-x:auto;margin-bottom:16px;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:400px}
+th,td{padding:8px 10px;border:1px solid var(--border);text-align:left;font-size:.85em}
+th{background:var(--surface);color:var(--heading);font-weight:600;white-space:nowrap}td{background:var(--bg)}
+
+/* TAGS */
+.tag{display:inline-block;background:var(--tag-bg);border:1px solid var(--tag-border);color:var(--accent);padding:1px 8px;border-radius:10px;font-size:.75em;margin-right:4px}
+.tag-red{border-color:var(--red);color:var(--red);background:#f8514922}
+.tag-green{border-color:var(--accent2);color:var(--accent2);background:#3fb95022}
+.tag-warn{border-color:var(--warn);color:var(--warn);background:#d2992222}
+.tag-purple{border-color:var(--purple);color:var(--purple);background:#bc8cff22}
+
+/* CALLOUTS */
+.callout{background:var(--surface);border-left:3px solid var(--accent);padding:12px 14px;margin:16px 0;border-radius:0 6px 6px 0;font-size:.92em}
+.callout.vision{border-left-color:var(--accent2)}.callout.warn{border-left-color:var(--warn)}.callout.critical{border-left-color:var(--red)}
+.meta{color:#8b949e;font-size:.82em;margin-bottom:24px}
+
+/* TOC */
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin:16px 0}
+.toc summary{cursor:pointer;font-weight:600;font-size:.95em;color:var(--heading)}.toc ol{margin:10px 0 0 18px}.toc li{margin-bottom:3px;font-size:.85em}
+
+/* HERO */
+.hero-formula{background:linear-gradient(135deg,#1f6feb22,#3fb95011);border:2px solid var(--accent);border-radius:10px;padding:20px 16px;margin:20px 0;text-align:center}
+.hero-formula .formula{font-size:1em;font-weight:700;color:var(--heading);line-height:1.8}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:16px 0}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center}
+.stat .num{font-size:1.4em;font-weight:700;color:var(--accent)}.stat .label{font-size:.7em;color:#8b949e}
+
+/* TIER CARDS */
+.tier-cards{display:grid;grid-template-columns:1fr;gap:12px;margin:16px 0}
+.tier-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px}
+.tier-card h4{margin-top:0;font-size:1em}
+.kid{border-left:3px solid var(--accent2)}.adult{border-left:3px solid var(--accent)}.corp{border-left:3px solid var(--purple)}
+
+/* MILESTONES */
+.milestone{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px;margin:10px 0}
+.milestone h4{margin-top:0}
+
+/* MERMAID CONTAINER */
+.mermaid-wrap{position:relative;background:var(--code-bg);border:1px solid var(--border);border-radius:6px;margin:16px 0;overflow:hidden}
+.mermaid-toolbar{display:flex;gap:6px;padding:6px 8px;background:var(--surface);border-bottom:1px solid var(--border)}
+.mermaid-toolbar button{background:var(--code-bg);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 10px;font-size:.75em;cursor:pointer}
+.mermaid-toolbar button:hover{border-color:var(--accent);color:var(--accent)}
+.mermaid-viewport{overflow:auto;padding:16px;-webkit-overflow-scrolling:touch;max-height:70vh}
+.mermaid-viewport.fullscreen{position:fixed;inset:0;z-index:1000;background:var(--bg);max-height:100vh;padding:20px}
+.mermaid-viewport svg{max-width:none}
+.mermaid{min-height:40px}
+
+footer{text-align:center;padding:20px 16px;color:#8b949e;font-size:.75em;border-top:1px solid var(--border);margin-top:40px}
+
+/* TABLET+ */
+@media(min-width:640px){
+  .container{padding:24px 28px}
+  h1{font-size:2em}h2{font-size:1.5em}
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .tier-cards{grid-template-columns:repeat(2,1fr)}
+  .hero-formula .formula{font-size:1.2em}
+}
+/* DESKTOP */
+@media(min-width:960px){
+  .container{padding:32px}
+  h1{font-size:2.4em}h2{font-size:1.6em}
+  .stats{grid-template-columns:repeat(6,1fr)}
+  .tier-cards{grid-template-columns:repeat(3,1fr)}
+  .hero-formula .formula{font-size:1.5em}
+  th,td{padding:10px 14px;font-size:.9em}
+}
 </style>
 </head>
 <body>
@@ -83,763 +112,890 @@
 <div class="container">
 
 <h1>Message Vet (msgvet.ai)</h1>
-<p style="font-size:1.3em; color:var(--heading); margin-bottom:4px;">Product Requirements Document</p>
-<p class="meta">Version 1.0.0 &bull; April 6, 2026 &bull; DRAFT FOR REVIEW<br>
-Build order: Kid &rarr; Adult consumer &rarr; Corporate (same MVP release train; features gated by roles/plans)</p>
+<p style="font-size:1.1em;color:var(--heading)">Product Requirements Document</p>
+<p class="meta">Version 1.0.0 &bull; April 6, 2026 &bull; DRAFT<br>
+Build order: Kid &rarr; Adult &rarr; Corporate (one codebase, feature-gated)</p>
 
 <div class="callout vision">
-<strong>Vision:</strong> A policy-enforced messaging platform that can connect to external channels (SMS/email/X/etc.) where possible, and run first-party chat + voice directly &mdash; vetting inbound and outbound communications with configurable rule matrices, approvals, delegation, quarantine, and audit-grade logging. One codebase serves kids, adults, and enterprises.
+<strong>Vision:</strong> A policy-enforced messaging platform that vets inbound and outbound communications across every channel &mdash; with configurable rule matrices, approvals, delegation, quarantine, and audit-grade logging. One codebase serves kids, adults, and enterprises.
 </div>
 
 <div class="hero-formula">
   <div class="formula">
-    <span style="color:var(--accent);">Policy Engine</span> +
-    <span style="color:var(--accent2);">Vet AI</span> +
-    <span style="color:var(--warn);">Channel Adapters</span> +
-    <span style="color:var(--purple);">First-Party Messaging</span><br>
-    <span style="color:var(--accent2); font-size:0.8em;">= MsgVet</span>
+    <span style="color:var(--accent)">Policy Engine</span> +
+    <span style="color:var(--accent2)">Vet AI</span> +
+    <span style="color:var(--warn)">Channel Modules</span> +
+    <span style="color:var(--purple)">First-Party Messaging</span><br>
+    = <strong>MsgVet</strong>
   </div>
 </div>
 
-<!-- Tier Overview -->
 <div class="tier-cards">
   <div class="tier-card kid">
-    <h4>Kid Safe <span class="tier-tag tag-green">Milestone A</span></h4>
-    <p>Stop harmful content reaching kids. Parent-controlled inbound filtering, outbound safety, quarantine with review workflows. COPPA-compliant by design.</p>
+    <h4>Kid Safe <span class="tag tag-green">Milestone A</span></h4>
+    <p>Stop harmful content reaching kids. Parent-controlled inbound filtering, outbound safety, quarantine with review. COPPA-compliant.</p>
   </div>
   <div class="tier-card adult">
-    <h4>Adult Guard <span class="tier-tag tag">Milestone B</span></h4>
-    <p>Prevent regret-sends. Drunk Guard, Ex Guard, tone shaping, cooldowns, scheduled sends, buddy checks. Intent capture with AI rewrites.</p>
+    <h4>Adult Guard <span class="tag">Milestone B</span></h4>
+    <p>Prevent regret-sends. Drunk Guard, Ex Guard, tone shaping, cooldowns, scheduled sends, buddy checks.</p>
   </div>
   <div class="tier-card corp">
-    <h4>Corporate <span class="tier-tag tag-purple">Milestone C</span></h4>
-    <p>Delegation, quorum approvals, audit exports, retention policies, compliance enforcement. SSO and legal hold ready.</p>
+    <h4>Corporate <span class="tag tag-purple">Milestone C</span></h4>
+    <p>Delegation, quorum approvals, audit exports, retention, compliance. SSO and legal hold ready.</p>
   </div>
 </div>
 
 <!-- TOC -->
-<nav class="toc">
-<strong>Table of Contents</strong>
+<details class="toc" open>
+<summary>Table of Contents</summary>
 <ol>
   <li><a href="#problem">Problem Statement</a></li>
-  <li><a href="#goals">Goals, Non-goals &amp; Success Metrics</a></li>
-  <li><a href="#personas">Personas &amp; User Journeys</a></li>
-  <li><a href="#primitives">Core Concepts (Platform Primitives)</a></li>
+  <li><a href="#goals">Goals, Non-goals &amp; Success</a></li>
+  <li><a href="#personas">Personas &amp; Journeys</a></li>
+  <li><a href="#primitives">Core Concepts</a></li>
   <li><a href="#surfaces">Product Surfaces</a></li>
-  <li><a href="#auth">Authentication, Roles &amp; Tenancy</a></li>
-  <li><a href="#kid-safety">Kid-First: Family Safety System</a></li>
-  <li><a href="#adult">Adult Consumer: Guardrails &amp; Intent Shaping</a></li>
-  <li><a href="#corporate">Corporate: Governance, Approvals &amp; Audit</a></li>
-  <li><a href="#quarantine">Quarantine System</a></li>
-  <li><a href="#policy-engine">Policy Engine &amp; Rule Matrix</a></li>
-  <li><a href="#vetting">Vetting Engine &amp; Visualization</a></li>
-  <li><a href="#approvals">Approval Workflows</a></li>
-  <li><a href="#messaging-arch">Messaging Architecture</a></li>
-  <li><a href="#scheduling">Scheduling &amp; Delivery Assurance</a></li>
-  <li><a href="#audit">Logging, Auditing &amp; Privacy</a></li>
-  <li><a href="#api">API Design &amp; Pagination</a></li>
-  <li><a href="#billing">Billing &amp; Usage Metering</a></li>
-  <li><a href="#llm">LLM Strategy &amp; Cost Optimization</a></li>
-  <li><a href="#architecture">System Architecture</a></li>
-  <li><a href="#tech-stack">Technology Stack</a></li>
+  <li><a href="#auth">Auth, Roles &amp; Tenancy</a></li>
+  <li><a href="#kid-safety">Kid-First: Family Safety</a></li>
+  <li><a href="#adult">Adult Guardrails</a></li>
+  <li><a href="#corporate">Corporate Governance</a></li>
+  <li><a href="#quarantine">Quarantine</a></li>
+  <li><a href="#rules">Rule Hierarchy &amp; Policy Engine</a></li>
+  <li><a href="#vetting">Vetting &amp; Visualization</a></li>
+  <li><a href="#approvals">Approvals</a></li>
+  <li><a href="#channels">Channel Module System</a></li>
+  <li><a href="#scheduling">Smart Scheduling &amp; Delivery</a></li>
+  <li><a href="#audit">Logging, Audit &amp; Privacy</a></li>
+  <li><a href="#billing">Billing</a></li>
+  <li><a href="#llm">LLM Strategy</a></li>
+  <li><a href="#architecture">Architecture</a></li>
+  <li><a href="#tech-stack">Tech Stack</a></li>
   <li><a href="#data-model">Data Model</a></li>
-  <li><a href="#security">Security Architecture</a></li>
-  <li><a href="#milestones">Build Order &amp; Milestones</a></li>
-  <li><a href="#ideas">High-Leverage Ideas</a></li>
-  <li><a href="#risks">Risks &amp; Mitigations</a></li>
-  <li><a href="#open">Open Questions</a></li>
+  <li><a href="#security">Security</a></li>
+  <li><a href="#milestones">Milestones</a></li>
+  <li><a href="#risks">Risks</a></li>
   <li><a href="#glossary">Glossary</a></li>
 </ol>
-</nav>
+</details>
 
-<!-- ===== 1. Problem Statement ===== -->
+<!-- ===== 1. PROBLEM ===== -->
 <h2 id="problem">1. Problem Statement</h2>
-
 <h3>For Kids</h3>
 <ul>
-  <li>Children receive harmful content (bullying, predatory, explicit) with no real-time guardrails.</li>
-  <li>Parents lack visibility into messaging without invasive surveillance.</li>
-  <li>No platform offers both <strong>inbound filtering AND outbound safety</strong> in one product.</li>
+  <li>Children receive harmful content (bullying, predatory, explicit) with zero real-time guardrails.</li>
+  <li>Parents lack visibility without invasive surveillance.</li>
+  <li>No platform offers <strong>inbound filtering AND outbound safety</strong> in one product.</li>
 </ul>
-
 <h3>For Adults</h3>
 <ul>
   <li>Regret-sends cost relationships, jobs, and reputations daily.</li>
   <li>No tool prevents messages to specific contacts during high-risk states.</li>
-  <li>Public posts lack pre-send review for tone, compliance, or appropriateness.</li>
+  <li>Public posts lack pre-send tone/compliance review.</li>
 </ul>
-
 <h3>For Organizations</h3>
 <ul>
-  <li>Executive communications require delegation with audit trails.</li>
-  <li>Compliance teams need message vetting without reading every message.</li>
-  <li>No platform combines governance + messaging + AI vetting in one system.</li>
+  <li>Executive comms require delegation with audit trails.</li>
+  <li>Compliance needs vetting without reading every message.</li>
+  <li>No platform combines governance + messaging + AI vetting.</li>
 </ul>
 
-<h3>The Cost of Doing Nothing</h3>
-<table>
+<h3>Cost of Doing Nothing</h3>
+<div class="table-wrap"><table>
 <tr><th>Scenario</th><th>Impact</th></tr>
 <tr><td>Kid exposed to predatory messaging</td><td><span class="tag tag-red">CRITICAL</span> Immeasurable harm</td></tr>
-<tr><td>Drunk text to ex</td><td><span class="tag tag-warn">HIGH</span> Relationship damage, possible legal issues</td></tr>
-<tr><td>Executive sends unvetted public statement</td><td><span class="tag tag-warn">HIGH</span> Stock price, brand, legal</td></tr>
-<tr><td>Employee sends privileged info externally</td><td><span class="tag tag-red">CRITICAL</span> Regulatory fines, litigation</td></tr>
-</table>
+<tr><td>Drunk text to ex</td><td><span class="tag tag-warn">HIGH</span> Relationship / legal</td></tr>
+<tr><td>Executive unvetted public statement</td><td><span class="tag tag-warn">HIGH</span> Stock, brand, legal</td></tr>
+<tr><td>Employee sends privileged info</td><td><span class="tag tag-red">CRITICAL</span> Fines, litigation</td></tr>
+</table></div>
 
-<!-- ===== 2. Goals ===== -->
-<h2 id="goals">2. Goals, Non-goals &amp; Success Metrics</h2>
-
+<!-- ===== 2. GOALS ===== -->
+<h2 id="goals">2. Goals, Non-goals &amp; Success</h2>
 <h3>Goals</h3>
 <ol>
-  <li><strong>Stop bad messages before they go out</strong> &mdash; tone, content, time, audience, compliance.</li>
-  <li><strong>Stop bad messages on the way in</strong> &mdash; quarantine + review + alerts (especially for kids).</li>
-  <li><strong>Unify communications</strong> across accounts/channels with consistent enforcement.</li>
-  <li><strong>Support approvals + delegation</strong> (AI, human, quorum) with complete audit trail.</li>
-  <li><strong>Offer first-party chat + voice</strong> to bypass external channel constraints and reduce cost.</li>
-  <li><strong>COPPA compliance by design</strong> &mdash; verifiable parental consent, data minimization.</li>
-  <li><strong>Cost-optimized AI</strong> &mdash; two-tier inference, deterministic rules first, LLM second.</li>
+  <li><strong>Stop bad messages out</strong> &mdash; tone, content, time, audience, compliance.</li>
+  <li><strong>Stop bad messages in</strong> &mdash; quarantine + review + alerts (kids especially).</li>
+  <li><strong>Unify comms</strong> across all channels with consistent enforcement.</li>
+  <li><strong>Approvals + delegation</strong> (AI, human, quorum) with full audit.</li>
+  <li><strong>First-party chat + voice</strong> for consistent enforcement + cost.</li>
+  <li><strong>COPPA by design.</strong></li>
+  <li><strong>Cost-optimized AI</strong> &mdash; deterministic first, LLM second.</li>
 </ol>
-
-<h3>Non-goals (Explicit)</h3>
+<h3>Non-goals</h3>
 <ul>
-  <li>Reading all iOS SMS/iMessage system-wide (not possible for third-party apps).</li>
+  <li>Reading all iOS SMS system-wide (impossible for 3rd party).</li>
   <li>Covert monitoring without consent.</li>
-  <li>Deceptive auto-replies (assistant must self-identify).</li>
+  <li>Deceptive auto-replies.</li>
   <li>Replacing Slack/Teams &mdash; MsgVet governs, not replaces.</li>
 </ul>
-
 <h3>Success Metrics</h3>
 <div class="stats">
-  <div class="stat"><div class="num">&gt;60%</div><div class="label">Users report fewer regrets</div></div>
+  <div class="stat"><div class="num">&gt;60%</div><div class="label">Fewer regrets reported</div></div>
   <div class="stat"><div class="num">&gt;75%</div><div class="label">Blocks confirmed good</div></div>
   <div class="stat"><div class="num">&gt;95%</div><div class="label">Kid threats caught</div></div>
-  <div class="stat"><div class="num">&lt;5min</div><div class="label">AI approval latency (p95)</div></div>
-  <div class="stat"><div class="num">&lt;$0.15</div><div class="label">Cost per 1K vetted msgs</div></div>
-  <div class="stat"><div class="num">10K</div><div class="label">Monthly active families (M6)</div></div>
+  <div class="stat"><div class="num">&lt;5m</div><div class="label">AI approval p95</div></div>
+  <div class="stat"><div class="num">&lt;$0.15</div><div class="label">Cost/1K msgs</div></div>
+  <div class="stat"><div class="num">10K</div><div class="label">Families M6</div></div>
 </div>
 
-<!-- ===== 3. Personas ===== -->
-<h2 id="personas">3. Personas &amp; User Journeys</h2>
+<!-- ===== 3. PERSONAS ===== -->
+<h2 id="personas">3. Personas &amp; Journeys</h2>
+<div class="callout"><strong>Kid:</strong> Message from unknown sender &rarr; vet: bullying + unknown = HIGH &rarr; quarantined &rarr; parent push notification &rarr; parent reviews: release / block / report</div>
+<div class="callout"><strong>Adult:</strong> Drunk Guard active &rarr; text to ex at 2 AM &rarr; HOLD until 10 AM &rarr; morning review: angry + not urgent &rarr; delete. Regret prevented.</div>
+<div class="callout"><strong>Corporate:</strong> EA drafts for CEO &rarr; quorum: PR + Legal &rarr; both approve &rarr; scheduled send &rarr; full audit trail.</div>
 
-<h3>Kid Account (Primary MVP Start)</h3>
-<div class="callout">
-<strong>Journey: Kid receives suspicious message</strong><br>
-1. Message arrives from unknown sender &rarr; 2. Vet engine: bullying + unknown = HIGH risk &rarr; 3. Quarantined (kid never sees it) &rarr; 4. Parent gets push notification &rarr; 5. Parent reviews: release / block / report
-</div>
-
-<h3>Adult Consumer</h3>
-<div class="callout">
-<strong>Journey: Drunk Guard activation</strong><br>
-1. User enables Drunk Guard &rarr; 2. Composes text to ex at 2 AM &rarr; 3. Engine: ex-contact + drunk-guard + late = HOLD &rarr; 4. "Message held until 10 AM" &rarr; 5. Morning review: sees vet report (angry, not urgent), deletes
-</div>
-
-<h3>Corporate / Executive</h3>
-<div class="callout">
-<strong>Journey: CEO delegate sends public statement</strong><br>
-1. EA drafts on CEO's behalf &rarr; 2. Requires quorum: PR + Legal &rarr; 3. Both approve &rarr; 4. Auto-sends via scheduled slot &rarr; 5. Full audit trail logged
-</div>
-
-<!-- ===== 4. Core Concepts ===== -->
-<h2 id="primitives">4. Core Concepts (Platform Primitives)</h2>
-
-<table>
+<!-- ===== 4. CORE CONCEPTS ===== -->
+<h2 id="primitives">4. Core Concepts</h2>
+<div class="table-wrap"><table>
 <tr><th>Primitive</th><th>Description</th></tr>
-<tr><td><strong>Channel</strong></td><td>External (SMS/email/X) or Internal (MsgVet Chat/Voice)</td></tr>
-<tr><td><strong>Account</strong></td><td>A connected identity (Gmail inbox, X handle, MsgVet ID)</td></tr>
+<tr><td><strong>Channel Module</strong></td><td>Pluggable adapter: MsgVet Chat, SMS, Email, Teams, Slack, X, etc.</td></tr>
+<tr><td><strong>Account</strong></td><td>Connected identity (Gmail, X handle, Teams account, MsgVet ID)</td></tr>
 <tr><td><strong>Alias Identity</strong></td><td>Label + optional phone/handle for compartmentalization</td></tr>
-<tr><td><strong>Group</strong></td><td>Relationship buckets (public/family/work) + sensitive via aliases</td></tr>
+<tr><td><strong>Group</strong></td><td>Relationship buckets: family, friends, work, public + sensitive via aliases</td></tr>
 <tr><td><strong>Policy Profile</strong></td><td>Named ruleset (Kid Safe, Drunk Guard, C-suite, etc.)</td></tr>
-<tr><td><strong>Rule Matrix</strong></td><td>Conditional rules: account &times; channel &times; group &times; time &times; location &times; state</td></tr>
-<tr><td><strong>Vet Report</strong></td><td>Scores + tags + pass/warn/block/approve + rewrite suggestions</td></tr>
+<tr><td><strong>Rule Hierarchy</strong></td><td>Global &rarr; Group &rarr; Individual rules (most specific wins)</td></tr>
+<tr><td><strong>Vet Report</strong></td><td>Scores + tags + pass/warn/block + rewrite suggestions</td></tr>
 <tr><td><strong>Quarantine</strong></td><td>Holding area for blocked messages + review workflow</td></tr>
 <tr><td><strong>Approval Workflow</strong></td><td>AI gate, human gate, mixed, quorum, SLA/escalation</td></tr>
-<tr><td><strong>Delegation</strong></td><td>Draft/send/approve permissions per account/profile</td></tr>
-<tr><td><strong>Tenant</strong></td><td>Family (parent admin + child users) or Org (roles hierarchy)</td></tr>
-</table>
+<tr><td><strong>Smart Schedule</strong></td><td>Context-aware delivery: state, geofence, activity, time triggers</td></tr>
+<tr><td><strong>Tenant</strong></td><td>Family (parent + kids) or Org (roles hierarchy)</td></tr>
+</table></div>
 
 <h3>Entity Relationship</h3>
-<div class="diagram">Tenant (Family | Org)
- ├── Users (with roles)
- │    ├── Accounts (connected channels)
- │    ├── Alias Identities
- │    └── Group Memberships
- ├── Policy Profiles
- │    └── Rule Matrix Entries
- ├── Conversations
- │    ├── Messages (vetted)
- │    │    ├── Vet Reports
- │    │    └── Quarantine Records
- │    └── Approval Workflows
- └── Audit Log (append-only)</div>
+<div class="mermaid-wrap">
+  <div class="mermaid-toolbar">
+    <button onclick="mermaidZoom(this,1.2)">Zoom +</button>
+    <button onclick="mermaidZoom(this,0.8)">Zoom &minus;</button>
+    <button onclick="mermaidReset(this)">Reset</button>
+    <button onclick="mermaidFullscreen(this)">Fullscreen</button>
+  </div>
+  <div class="mermaid-viewport">
+    <pre class="mermaid">
+graph TD
+  T[Tenant: Family or Org] --> U[Users with Roles]
+  T --> PP[Policy Profiles]
+  T --> C[Conversations]
+  T --> AL[Audit Log - append only]
+  U --> A[Accounts - connected channels]
+  U --> AI[Alias Identities]
+  U --> GM[Group Memberships]
+  PP --> RM[Rule Matrix Entries]
+  RM --> GR[Global Rules]
+  RM --> GRP[Group Rules - family/friends/work]
+  RM --> IR[Individual Contact Rules]
+  C --> M[Messages - vetted]
+  M --> VR[Vet Reports]
+  M --> QR[Quarantine Records]
+  C --> AW[Approval Workflows]
+  M --> SS[Smart Schedules]
+    </pre>
+  </div>
+</div>
 
-<!-- ===== 5. Product Surfaces ===== -->
+<!-- ===== 5. PRODUCT SURFACES ===== -->
 <h2 id="surfaces">5. Product Surfaces</h2>
-
 <h3>Mobile (iOS / Android) &mdash; Primary</h3>
-<table>
+<div class="table-wrap"><table>
 <tr><th>Screen</th><th>Description</th></tr>
-<tr><td>Unified Inbox</td><td>External + internal threads, color-coded by vet status</td></tr>
-<tr><td>Compose</td><td>Profile selector, templates, real-time vet preview, rewrite suggestions</td></tr>
-<tr><td>Quarantine</td><td>Inbound + outbound held messages, reason codes, release/reject</td></tr>
-<tr><td>Approvals</td><td>Pending approval queue for approvers/delegates</td></tr>
+<tr><td>Unified Inbox</td><td>All channels in one view, color-coded by vet status</td></tr>
+<tr><td>Compose</td><td>Profile selector, templates, real-time vet preview, rewrites</td></tr>
+<tr><td>Quarantine</td><td>Inbound + outbound held messages, release/reject</td></tr>
+<tr><td>Approvals</td><td>Pending queue for approvers/delegates</td></tr>
 <tr><td>Family Dashboard</td><td>Kid activity, quarantine queue, policy controls (parent-only)</td></tr>
-<tr><td>Settings</td><td>Aliases, policies, billing, privacy, connected accounts</td></tr>
-</table>
+<tr><td>Settings</td><td>Aliases, policies, billing, connected accounts</td></tr>
+<tr><td>Smart Schedule</td><td>Pending sends, geofence triggers, state-aware queue</td></tr>
+</table></div>
 
-<h3>Web (MVP for Admin/Ops)</h3>
-<table>
+<h3>Watch App (Apple Watch / Wear OS)</h3>
+<div class="callout vision">
+<strong>Wrist-first alerts and quick actions.</strong> The watch is a critical surface for time-sensitive notifications, especially for parents and approvers.
+</div>
+<div class="table-wrap"><table>
+<tr><th>Feature</th><th>Description</th></tr>
+<tr><td>Parent Alerts</td><td>Kid quarantine notifications with glanceable severity + sender. Tap to release/block from wrist.</td></tr>
+<tr><td>Approval Actions</td><td>Approve/reject pending messages with one tap. Vet report summary on wrist.</td></tr>
+<tr><td>Geofence Triggers</td><td>Watch detects arrival/departure &rarr; fires scheduled sends: "I'm here," "Just left work."</td></tr>
+<tr><td>State Detection</td><td>Workout active, driving (CarPlay/Auto), Do Not Disturb &rarr; feeds into rule engine state signals.</td></tr>
+<tr><td>Quick Compose</td><td>Voice dictation + template sends through vet pipeline.</td></tr>
+<tr><td>Status Glance</td><td>Complication: unread count, quarantine count, pending approvals badge.</td></tr>
+</table></div>
+
+<h3>Web Console (Admin/Ops)</h3>
+<div class="table-wrap"><table>
 <tr><th>Screen</th><th>Description</th></tr>
 <tr><td>Parent Console</td><td>Full family dashboard with analytics and policy management</td></tr>
 <tr><td>Corporate Console</td><td>Policies, users, delegation, audit logs, exports</td></tr>
 <tr><td>Admin Panel</td><td>Support tools, abuse reports, appeals, system health</td></tr>
-</table>
+</table></div>
 
-<!-- ===== 6. Auth ===== -->
-<h2 id="auth">6. Authentication, Roles &amp; Tenancy</h2>
-
-<h3>Family Tenant Roles</h3>
-<table>
+<!-- ===== 6. AUTH ===== -->
+<h2 id="auth">6. Auth, Roles &amp; Tenancy</h2>
+<h3>Family Roles</h3>
+<div class="table-wrap"><table>
 <tr><th>Role</th><th>Capabilities</th></tr>
-<tr><td><strong>Parent (Admin)</strong></td><td>Full control: policies, quarantine release, kid management, billing</td></tr>
+<tr><td><strong>Parent</strong></td><td>Full control: policies, quarantine release, kid management, billing</td></tr>
 <tr><td><strong>Teen</strong></td><td>Send with vetting, limited policy visibility, no quarantine release</td></tr>
-<tr><td><strong>Child (Under-13)</strong></td><td>Send with vetting + approval required, no settings access, COPPA-compliant</td></tr>
-</table>
-
-<h3>Org Tenant Roles</h3>
-<table>
+<tr><td><strong>Child</strong></td><td>Send with vetting + approval, no settings, COPPA</td></tr>
+</table></div>
+<h3>Org Roles</h3>
+<div class="table-wrap"><table>
 <tr><th>Role</th><th>Capabilities</th></tr>
-<tr><td><strong>Owner</strong></td><td>Full org control, billing, user management, policy override</td></tr>
-<tr><td><strong>Admin</strong></td><td>User management, policy management, audit access</td></tr>
-<tr><td><strong>Approver</strong></td><td>Approve/reject messages in approval queues</td></tr>
-<tr><td><strong>Sender</strong></td><td>Send messages (may require approval per policy)</td></tr>
-<tr><td><strong>Drafter</strong></td><td>Draft messages on behalf of others (delegation)</td></tr>
-<tr><td><strong>Auditor</strong></td><td>Read-only: audit logs, exports, analytics</td></tr>
-</table>
+<tr><td>Owner</td><td>Full org control, billing, users, policy override</td></tr>
+<tr><td>Admin</td><td>User + policy management, audit</td></tr>
+<tr><td>Approver</td><td>Approve/reject in queues</td></tr>
+<tr><td>Sender</td><td>Send (may need approval)</td></tr>
+<tr><td>Drafter</td><td>Draft on behalf of others</td></tr>
+<tr><td>Auditor</td><td>Read-only: logs, exports</td></tr>
+</table></div>
 
-<!-- ===== 7. Kid Safety ===== -->
-<h2 id="kid-safety">7. Kid-First: Family Safety System</h2>
-
-<div class="callout critical">
-<strong>Build Priority:</strong> This is Milestone A. Everything else depends on proving kid safety works. COPPA compliance is non-negotiable.
-</div>
+<!-- ===== 7. KID SAFETY ===== -->
+<h2 id="kid-safety">7. Kid-First: Family Safety</h2>
+<div class="callout critical"><strong>Build Priority:</strong> Milestone A. Everything else depends on proving kid safety. COPPA is non-negotiable.</div>
 
 <h3>Inbound Filtering Pipeline</h3>
-<div class="pipeline">Message Received
-  │
-  ├─ Step 1: Deterministic Filters
-  │   ├─ Allow list (trusted contacts) → ALLOW
-  │   ├─ Deny list (blocked senders) → HARD BLOCK
-  │   ├─ Time window (e.g., bedtime) → QUARANTINE
-  │   └─ Unknown sender rules → QUARANTINE or escalate
-  │
-  ├─ Step 2: LLM Classification (if not resolved)
-  │   ├─ Categories: bullying, sexual, self-harm, threats, scams, PII
-  │   ├─ Severity: LOW / MEDIUM / HIGH / CRITICAL
-  │   └─ Confidence score
-  │
-  └─ Step 3: Decision
-      ├─ ALLOW (trusted + clean)
-      ├─ ALLOW + FLAG (minor concern, logged)
-      ├─ QUARANTINE (HIGH/CRITICAL; parent must release)
-      └─ HARD BLOCK + metadata (known threats)</div>
+<div class="mermaid-wrap">
+  <div class="mermaid-toolbar">
+    <button onclick="mermaidZoom(this,1.2)">Zoom +</button>
+    <button onclick="mermaidZoom(this,0.8)">Zoom &minus;</button>
+    <button onclick="mermaidReset(this)">Reset</button>
+    <button onclick="mermaidFullscreen(this)">Fullscreen</button>
+  </div>
+  <div class="mermaid-viewport">
+    <pre class="mermaid">
+flowchart TD
+  MSG[Message Received] --> DET{Deterministic Filters}
+  DET -->|Allow list| ALLOW[ALLOW - deliver]
+  DET -->|Deny list| BLOCK[HARD BLOCK + quarantine]
+  DET -->|Time window fail| Q1[QUARANTINE]
+  DET -->|Unknown sender| Q2[QUARANTINE or escalate]
+  DET -->|Not resolved| LLM[LLM Classification - cheap model]
+  LLM --> CONF{Confidence >= 0.8?}
+  CONF -->|No| STRONG[Escalate to strong model]
+  CONF -->|Yes| DEC{Decision}
+  STRONG --> DEC
+  DEC -->|Clean| ALLOW
+  DEC -->|Minor concern| FLAG[ALLOW + FLAG for parent]
+  DEC -->|HIGH/CRITICAL| Q3[QUARANTINE - parent must release]
+  DEC -->|Known threat| BLOCK
+  Q3 --> CRISIS{Self-harm or threat?}
+  CRISIS -->|Yes| ALERT[CRITICAL parent alert + crisis resources]
+  CRISIS -->|No| NOTIFY[Severity-based parent notification]
+    </pre>
+  </div>
+</div>
 
 <h3>Parent Notification Tiers</h3>
-<table>
-<tr><th>Severity</th><th>Notification</th><th>Timing</th></tr>
-<tr><td><span class="tag tag-red">CRITICAL</span> Self-harm, threats</td><td>Immediate push + SMS</td><td>Real-time</td></tr>
-<tr><td><span class="tag tag-warn">HIGH</span> Bullying, sexual</td><td>Push notification</td><td>&lt; 1 minute</td></tr>
-<tr><td><span class="tag">MEDIUM</span> Mild language, unknown sender</td><td>Batched digest</td><td>Hourly</td></tr>
+<div class="table-wrap"><table>
+<tr><th>Severity</th><th>Channel</th><th>Timing</th></tr>
+<tr><td><span class="tag tag-red">CRITICAL</span> Self-harm, threats</td><td>Push + SMS + Watch haptic</td><td>Real-time</td></tr>
+<tr><td><span class="tag tag-warn">HIGH</span> Bullying, sexual</td><td>Push + Watch</td><td>&lt; 1 min</td></tr>
+<tr><td><span class="tag">MEDIUM</span> Mild, unknown sender</td><td>Batched digest</td><td>Hourly</td></tr>
 <tr><td>LOW Minor flags</td><td>Daily summary</td><td>End of day</td></tr>
-</table>
-
-<div class="callout warn">
-<strong>Crisis Escalation:</strong> If self-harm or threat signals detected &rarr; quarantine + parent alert + optional crisis resources (988 Lifeline, Crisis Text Line).
-</div>
+</table></div>
 
 <h3>Kid Outbound Safety</h3>
-<table>
+<div class="table-wrap"><table>
 <tr><th>Check</th><th>Action on Fail</th></tr>
-<tr><td>Language analysis (profanity, threats, harassment)</td><td>Block + hold for parent</td></tr>
-<tr><td>Sexual content detection</td><td>Block + hold for parent</td></tr>
-<tr><td>Self-harm signal detection</td><td>Quarantine + CRITICAL alert</td></tr>
-<tr><td>Doxxing / PII exposure</td><td>Block + parent alert</td></tr>
-<tr><td>Time-of-day restrictions (bedtime)</td><td>Block: &ldquo;Try again tomorrow&rdquo;</td></tr>
+<tr><td>Harassment / profanity / threats</td><td>Block + hold for parent</td></tr>
+<tr><td>Sexual content</td><td>Block + hold for parent</td></tr>
+<tr><td>Self-harm signals</td><td>Quarantine + CRITICAL alert</td></tr>
+<tr><td>PII / doxxing</td><td>Block + parent alert</td></tr>
+<tr><td>Bedtime / school hours</td><td>Block: "Try again later"</td></tr>
 <tr><td>Unknown recipient</td><td>Hold for parent approval</td></tr>
-<tr><td>Message frequency limits</td><td>Throttle + notify</td></tr>
-</table>
+<tr><td>Message frequency</td><td>Throttle + notify</td></tr>
+</table></div>
 
-<h3>Parent Review Workflow</h3>
-<div class="pipeline">Quarantined Message
-  │
-  ├─ Parent opens Family Dashboard / Quarantine tab
-  ├─ Sees: sender, timestamp, reason, severity, vet summary
-  │   (content visible only if parent opts in; default: metadata-only)
-  │
-  └─ Actions:
-      ├─ Release to kid
-      ├─ Release with note ("Be careful with this person")
-      ├─ Reject (deleted from kid view)
-      ├─ Block sender
-      ├─ Report sender (abuse pipeline)
-      └─ Adjust policy (trusted contacts, thresholds)</div>
-
-<!-- ===== 8. Adult ===== -->
-<h2 id="adult">8. Adult Consumer: Guardrails &amp; Intent Shaping</h2>
-
+<!-- ===== 8. ADULT ===== -->
+<h2 id="adult">8. Adult Guardrails &amp; Intent Shaping</h2>
 <h3>Policy Packs</h3>
-<table>
+<div class="table-wrap"><table>
 <tr><th>Pack</th><th>Key Rules</th></tr>
 <tr><td><strong>Drunk Guard</strong></td><td>Time gates (11PM-8AM), specific contacts blocked, mandatory cooldown</td></tr>
-<tr><td><strong>Ex Guard / No-Contact</strong></td><td>Hard block on send + receive to specified contacts</td></tr>
-<tr><td><strong>Professional Mode</strong></td><td>Profanity filter, tone analysis, formality enforcement</td></tr>
-<tr><td><strong>Public Posting Guard</strong></td><td>Mandatory vet review, rewrite suggestions, cooldown</td></tr>
+<tr><td><strong>Ex Guard</strong></td><td>Hard block on send + receive to specified contacts</td></tr>
+<tr><td><strong>Professional</strong></td><td>Profanity filter, tone analysis, formality enforcement</td></tr>
+<tr><td><strong>Public Posting</strong></td><td>Mandatory vet review, rewrite suggestions, cooldown</td></tr>
 <tr><td><strong>Warm &amp; Empathetic</strong></td><td>Tone rewrite, sentiment enforcement</td></tr>
-<tr><td><strong>Short, Neutral, No Sarcasm</strong></td><td>Length limits, sarcasm detection, neutrality</td></tr>
-</table>
+<tr><td><strong>Short &amp; Neutral</strong></td><td>Length limits, sarcasm detection, neutrality</td></tr>
+</table></div>
 
 <h3>Regret Controls</h3>
-<table>
+<div class="table-wrap"><table>
 <tr><th>Control</th><th>Description</th></tr>
-<tr><td>Cooldown timer</td><td>Configurable delay (30s&ndash;24h) per contact/group/time</td></tr>
-<tr><td>Scheduled send</td><td>Force messages to queue for future delivery</td></tr>
-<tr><td>Undo-send window</td><td>Recall window; first-party chat: up to 5 min</td></tr>
-<tr><td>Buddy check</td><td>Escalate to designated approver for specific contacts/times</td></tr>
-<tr><td>State toggle</td><td>Manual mode activation (drunk, angry, upset)</td></tr>
-</table>
+<tr><td>Cooldown timer</td><td>30s &ndash; 24h delay per contact/group/time</td></tr>
+<tr><td>Scheduled send</td><td>Queue for future delivery</td></tr>
+<tr><td>Undo-send</td><td>Recall window (first-party: up to 5 min)</td></tr>
+<tr><td>Buddy check</td><td>Escalate to designated approver</td></tr>
+<tr><td>State toggle</td><td>Manual: drunk, angry, upset mode</td></tr>
+</table></div>
 
-<h3>Tone &amp; Intent Capture</h3>
-<p>Compose flow: select intent (apology/decline/request/update) &rarr; write draft &rarr; vet analyzes against policy &rarr; system suggests rewrites:</p>
-<ul>
-  <li><strong>Minimal edit</strong> &mdash; closest to original</li>
-  <li><strong>More professional</strong></li>
-  <li><strong>More empathetic</strong></li>
-  <li><strong>Shorter</strong></li>
-  <li><strong>Safe &amp; boring</strong> &mdash; maximum risk reduction</li>
-</ul>
-
-<!-- ===== 9. Corporate ===== -->
-<h2 id="corporate">9. Corporate: Governance, Approvals &amp; Audit</h2>
-
-<h3>Delegation Model</h3>
-<table>
-<tr><th>Permission</th><th>Description</th><th>Example</th></tr>
-<tr><td>Draft</td><td>Create messages on behalf of another</td><td>EA drafts for CEO</td></tr>
-<tr><td>Send</td><td>Send from another user's account</td><td>EA sends approved drafts</td></tr>
-<tr><td>Approve</td><td>Approve/reject in approval queues</td><td>Legal reviews public statements</td></tr>
-<tr><td>Manage</td><td>Modify policies/settings for delegated accounts</td><td>Admin manages exec comms</td></tr>
-</table>
-
-<h3>Quorum Approvals</h3>
-<ul>
-  <li>Configurable M-of-N (e.g., 2 of 3: PR + Legal + CEO)</li>
-  <li>Parallel or sequential approval chains</li>
-  <li>SLA per step with escalation on breach</li>
-  <li>Emergency bypass: biometric + reason + hard audit flag</li>
-</ul>
+<!-- ===== 9. CORPORATE ===== -->
+<h2 id="corporate">9. Corporate Governance</h2>
+<h3>Delegation</h3>
+<div class="table-wrap"><table>
+<tr><th>Permission</th><th>Example</th></tr>
+<tr><td>Draft</td><td>EA drafts for CEO</td></tr>
+<tr><td>Send</td><td>EA sends approved drafts</td></tr>
+<tr><td>Approve</td><td>Legal reviews public statements</td></tr>
+<tr><td>Manage</td><td>Admin manages exec comms policies</td></tr>
+</table></div>
 
 <h3>Audit &amp; Compliance</h3>
-<table>
+<div class="table-wrap"><table>
 <tr><th>Feature</th><th>Description</th></tr>
-<tr><td>Immutable event log</td><td>Append-only, tamper-evident hash chain</td></tr>
-<tr><td>Retention policies</td><td>Configurable per org (30 days to indefinite)</td></tr>
-<tr><td>Legal hold</td><td>Freeze deletion for specified users/threads (phase 2)</td></tr>
-<tr><td>Export</td><td>Structured JSON/CSV for compliance review</td></tr>
-<tr><td>Role-based audit access</td><td>Auditor sees logs without message content (configurable)</td></tr>
-</table>
+<tr><td>Immutable log</td><td>Append-only, tamper-evident hash chain</td></tr>
+<tr><td>Retention</td><td>Configurable per org (30d &ndash; indefinite)</td></tr>
+<tr><td>Export</td><td>JSON/CSV for compliance review</td></tr>
+<tr><td>Legal hold</td><td>Freeze deletion (phase 2)</td></tr>
+</table></div>
 
-<!-- ===== 10. Quarantine ===== -->
-<h2 id="quarantine">10. Quarantine System</h2>
+<!-- ===== 10. QUARANTINE ===== -->
+<h2 id="quarantine">10. Quarantine</h2>
+<div class="callout"><strong>Rule:</strong> All blocked content lands in quarantine unless configured as silent drop.</div>
+<div class="table-wrap"><table>
+<tr><th>Element</th><th>Description</th></tr>
+<tr><td>List view</td><td>Sort by severity, date, sender, direction</td></tr>
+<tr><td>Reason codes</td><td>"Blocked sender," "Unsafe: bullying," "Time window"</td></tr>
+<tr><td>Actions</td><td>Release / Approve+rewrite / Reject+note / Block sender / Report</td></tr>
+<tr><td>Batch</td><td>Multi-select: release trusted, reject expired</td></tr>
+<tr><td>Kid accounts</td><td>Parent-only release (teen LOW self-release if policy allows)</td></tr>
+</table></div>
 
-<div class="callout">
-<strong>Rule:</strong> All blocked content (inbound or outbound) lands in quarantine unless explicitly configured as silent drop.
+<!-- ===== 11. RULE HIERARCHY ===== -->
+<h2 id="rules">11. Rule Hierarchy &amp; Policy Engine</h2>
+
+<div class="callout vision">
+<strong>Three-tier rule hierarchy:</strong> Global rules apply to everyone. Group rules (families, friends, work, custom) override globals. Individual contact rules are the most specific and override everything. Stricter always wins at the same level.
 </div>
 
-<table>
-<tr><th>Element</th><th>Description</th></tr>
-<tr><td>List view</td><td>Sortable by severity, date, sender, direction</td></tr>
-<tr><td>Reason codes</td><td>&ldquo;Blocked sender,&rdquo; &ldquo;Unsafe: bullying,&rdquo; &ldquo;Time window violation&rdquo;</td></tr>
-<tr><td>Vet report</td><td>Inline scores, tags, confidence</td></tr>
-<tr><td>Actions</td><td>Release / Approve with rewrite / Reject + note / Block sender / Report</td></tr>
-<tr><td>Batch actions</td><td>Multi-select: release all from trusted, reject expired</td></tr>
-<tr><td>Kid accounts</td><td>Parent-only release (teen can self-release LOW if policy allows)</td></tr>
-</table>
+<h3>Rule Hierarchy</h3>
+<div class="mermaid-wrap">
+  <div class="mermaid-toolbar">
+    <button onclick="mermaidZoom(this,1.2)">Zoom +</button>
+    <button onclick="mermaidZoom(this,0.8)">Zoom &minus;</button>
+    <button onclick="mermaidReset(this)">Reset</button>
+    <button onclick="mermaidFullscreen(this)">Fullscreen</button>
+  </div>
+  <div class="mermaid-viewport">
+    <pre class="mermaid">
+flowchart TD
+  subgraph GLOBAL["GLOBAL RULES (apply to all contacts)"]
+    G1["No sends after midnight"]
+    G2["All outbound vetted"]
+    G3["Profanity filter active"]
+  end
+  subgraph GROUP["GROUP RULES (override global)"]
+    GF["Family: no restrictions on time"]
+    GW["Work: professional tone required"]
+    GR["Friends: relaxed language OK"]
+    GC["Custom groups via aliases"]
+  end
+  subgraph INDIVIDUAL["INDIVIDUAL RULES (most specific)"]
+    I1["Ex: HARD BLOCK always"]
+    I2["Boss: don't text after 6PM"]
+    I3["Mom: no restrictions"]
+    I4["Contractor: biz hours only"]
+  end
+  GLOBAL --> GROUP
+  GROUP --> INDIVIDUAL
+  INDIVIDUAL --> RESOLVE{Conflict Resolution}
+  RESOLVE --> R1["Most specific wins"]
+  RESOLVE --> R2["Stricter wins at same level"]
+  RESOLVE --> R3["Explicit override requires admin"]
+  RESOLVE --> R4["Every resolution audit-logged"]
+    </pre>
+  </div>
+</div>
 
-<!-- ===== 11. Policy Engine ===== -->
-<h2 id="policy-engine">11. Policy Engine &amp; Rule Matrix</h2>
+<h3>Rule Scope Examples</h3>
+<div class="table-wrap"><table>
+<tr><th>Scope</th><th>Example Rule</th><th>Effect</th></tr>
+<tr><td><span class="tag tag-red">Global</span></td><td>No sends between 12AM-6AM</td><td>Applies to ALL contacts unless overridden</td></tr>
+<tr><td><span class="tag tag-red">Global</span></td><td>All outbound must pass vet</td><td>Universal, no override allowed</td></tr>
+<tr><td><span class="tag tag-warn">Group: Family</span></td><td>No time restrictions</td><td>Overrides global midnight rule for family</td></tr>
+<tr><td><span class="tag tag-warn">Group: Work</span></td><td>Professional tone, biz hours only</td><td>Work contacts get stricter tone rules</td></tr>
+<tr><td><span class="tag tag-warn">Group: Friends</span></td><td>Relaxed language, warn only</td><td>Friends get looser profanity rules</td></tr>
+<tr><td><span class="tag tag-green">Individual</span></td><td>Don't text X until after school (3:30 PM)</td><td>Overrides group time rules for this one contact</td></tr>
+<tr><td><span class="tag tag-green">Individual</span></td><td>Don't text X if he's driving/flying/working out</td><td>State-aware hold; send after activity ends</td></tr>
+<tr><td><span class="tag tag-green">Individual</span></td><td>Ex: HARD BLOCK, both directions</td><td>Overrides everything; no communication</td></tr>
+<tr><td><span class="tag tag-green">Individual</span></td><td>Boss: no texts after 6PM, hold for next morning</td><td>Time-aware queue per individual</td></tr>
+</table></div>
 
-<h3>Rule Matrix Inputs</h3>
-<table>
+<h3>Rule Matrix Dimensions</h3>
+<div class="table-wrap"><table>
 <tr><th>Dimension</th><th>Examples</th></tr>
-<tr><td>Account/Channel</td><td>Gmail, SMS, X, MsgVet Chat</td></tr>
-<tr><td>Target/Group</td><td>Specific contact, group (family, work, public)</td></tr>
-<tr><td>Time Window</td><td>After 11PM, weekends, work hours</td></tr>
-<tr><td>Location</td><td>Geofence (opt-in): driving, in meeting</td></tr>
-<tr><td>User State</td><td>Manual toggles: drunk, angry, quiet, court mode</td></tr>
+<tr><td>Channel</td><td>Any channel module: Teams, SMS, Email, MsgVet Chat, X</td></tr>
+<tr><td>Target scope</td><td>Global / Group (family, friends, work, custom) / Individual contact</td></tr>
+<tr><td>Time windows</td><td>Biz hours, school hours, bedtime, custom schedules</td></tr>
+<tr><td>Geofence</td><td>At work, at home, at school, at gym, left location, arrived at location</td></tr>
+<tr><td>Recipient state</td><td>Driving, flying, working out, in meeting, sleeping, DND</td></tr>
+<tr><td>Sender state</td><td>Drunk mode, angry mode, quiet mode, court mode</td></tr>
+<tr><td>Activity combo</td><td>Combinations: "after he lands AND it's after 9AM"</td></tr>
 <tr><td>Direction</td><td>Inbound, outbound, both</td></tr>
-</table>
+</table></div>
 
-<h3>Resolution Rules</h3>
-<ol>
-  <li><strong>Most specific wins:</strong> account + contact + time beats account-only.</li>
-  <li><strong>Stricter wins on conflict:</strong> more restrictive action at same specificity.</li>
-  <li><strong>Explicit override:</strong> <code>override: true</code> can relax (requires admin).</li>
-  <li><strong>Audit on every resolution:</strong> log which rules matched, won, and why.</li>
-</ol>
-
-<h3>Policy Packs Shipped in MVP</h3>
-<table>
-<tr><th>Pack</th><th>Tier</th><th>Key Rules</th></tr>
-<tr><td>Kid Safe (Core)</td><td><span class="tag tag-green">KID</span></td><td>Strictest: all vetted, outbound requires approval, unknowns quarantined</td></tr>
-<tr><td>Teen Safe</td><td><span class="tag tag-green">KID</span></td><td>Moderate: vetted, most outbound auto-approved, unknowns flagged</td></tr>
-<tr><td>Drunk Guard</td><td><span class="tag">ADULT</span></td><td>Time + state blocks, specific contacts, mandatory cooldown</td></tr>
-<tr><td>Ex Guard</td><td><span class="tag">ADULT</span></td><td>Hard block on specified contacts, both directions</td></tr>
-<tr><td>C-level / Executive</td><td><span class="tag tag-purple">CORP</span></td><td>All external sends require approval, delegation enabled</td></tr>
-<tr><td>PR Safe / Brand Safe</td><td><span class="tag tag-purple">CORP</span></td><td>Public posts require vet + approval, tone enforcement</td></tr>
-<tr><td>Legal-safe</td><td><span class="tag tag-purple">CORP</span></td><td>No speculation, no commitments, privilege markers</td></tr>
-<tr><td>Sales / CX</td><td><span class="tag tag-purple">CORP</span></td><td>Professional tone, no commitment language</td></tr>
-</table>
-
-<!-- ===== 12. Vetting ===== -->
-<h2 id="vetting">12. Vetting Engine &amp; Visualization</h2>
-
-<h3>Vet Report Scores</h3>
-<table>
+<!-- ===== 12. VETTING ===== -->
+<h2 id="vetting">12. Vetting &amp; Visualization</h2>
+<div class="table-wrap"><table>
 <tr><th>Score</th><th>Values</th></tr>
 <tr><td>Tone</td><td>calm, angry, sarcastic, flirty, dismissive, apologetic, threatening, neutral</td></tr>
-<tr><td>Urgency</td><td>LOW / MEDIUM / HIGH + &ldquo;actually urgent?&rdquo; classifier</td></tr>
+<tr><td>Urgency</td><td>LOW / MEDIUM / HIGH + "actually urgent?" classifier</td></tr>
 <tr><td>Professionalism</td><td>0&ndash;100</td></tr>
-<tr><td>Relationship appropriateness</td><td>0&ndash;100</td></tr>
 <tr><td>Risk tags</td><td>harassment, threat, doxxing, compliance, reputational, scam, self-harm, sexual, PII</td></tr>
 <tr><td>Decision</td><td>PASS / WARN / BLOCK / REQUIRE_APPROVAL</td></tr>
-</table>
+</table></div>
 
 <h3>Visualization</h3>
-<table>
+<div class="table-wrap"><table>
 <tr><th>Element</th><th>Description</th></tr>
-<tr><td>Message list chips</td><td>Color-coded: <span style="color:var(--accent2);">green</span> (pass), <span style="color:var(--warn);">yellow</span> (warn), <span style="color:var(--red);">red</span> (blocked), <span style="color:var(--accent);">blue</span> (pending)</td></tr>
-<tr><td>Tone indicator</td><td>Icon + label on each message</td></tr>
+<tr><td>Message chips</td><td><span style="color:var(--accent2)">green</span> pass, <span style="color:var(--warn)">yellow</span> warn, <span style="color:var(--red)">red</span> blocked, <span style="color:var(--accent)">blue</span> pending</td></tr>
 <tr><td>Thread timeline</td><td>Tone drift graph (escalation detection)</td></tr>
-<tr><td>Vet report drawer</td><td>Slide-out with full scores, tags, matched rules</td></tr>
-</table>
+<tr><td>Vet drawer</td><td>Slide-out: scores, tags, matched rules, rewrites</td></tr>
+</table></div>
 
-<!-- ===== 13. Approvals ===== -->
-<h2 id="approvals">13. Approval Workflows</h2>
-
-<table>
-<tr><th>Mode</th><th>Description</th><th>Use Case</th></tr>
-<tr><td>AI Gate Only</td><td>Auto-approve if vet passes</td><td>Low-risk adult sends</td></tr>
-<tr><td>Human Always</td><td>Every message requires human approval</td><td>Under-13 outbound, CEO public</td></tr>
-<tr><td>Mixed</td><td>AI pass + human on triggers</td><td>Corporate external</td></tr>
-<tr><td>Quorum</td><td>M-of-N approvers</td><td>PR + Legal for public</td></tr>
-</table>
+<!-- ===== 13. APPROVALS ===== -->
+<h2 id="approvals">13. Approvals</h2>
+<div class="mermaid-wrap">
+  <div class="mermaid-toolbar">
+    <button onclick="mermaidZoom(this,1.2)">Zoom +</button>
+    <button onclick="mermaidZoom(this,0.8)">Zoom &minus;</button>
+    <button onclick="mermaidReset(this)">Reset</button>
+    <button onclick="mermaidFullscreen(this)">Fullscreen</button>
+  </div>
+  <div class="mermaid-viewport">
+    <pre class="mermaid">
+flowchart LR
+  REQ[Message needs approval] --> MODE{Mode?}
+  MODE -->|AI Only| AI{Vet passes?}
+  AI -->|Yes| SEND[Send]
+  AI -->|No| QUAR[Quarantine]
+  MODE -->|Human Always| HUMAN[Notify approver]
+  HUMAN --> HA{Decision}
+  HA -->|Approve| SEND
+  HA -->|Reject| QUAR
+  HA -->|Timeout| ESC[Escalation chain]
+  ESC --> HUMAN
+  MODE -->|Mixed| MIX[AI pass + human on triggers]
+  MIX --> SEND
+  MODE -->|Quorum| QUOR[M-of-N must approve]
+  QUOR -->|M reached| SEND
+  QUOR -->|SLA breach| ESC
+  QUOR -->|N rejected| QUAR
+    </pre>
+  </div>
+</div>
 
 <h4>Emergency Bypass</h4>
 <ul>
-  <li>Biometric auth required</li>
-  <li>Mandatory reason (logged)</li>
-  <li>Hard audit flag</li>
-  <li>Immediate notification to all approvers</li>
+  <li>Biometric required + mandatory reason (logged)</li>
+  <li>Hard audit flag + immediate notification to all approvers</li>
   <li>Review required within 24 hours</li>
 </ul>
 
-<!-- ===== 14. Messaging Architecture ===== -->
-<h2 id="messaging-arch">14. Messaging Architecture</h2>
-
-<h3>External Adapters</h3>
-<table>
-<tr><th>Channel</th><th>Method</th><th>Limitations</th></tr>
-<tr><td>Email</td><td>IMAP/SMTP + OAuth</td><td>Full send/receive</td></tr>
-<tr><td>SMS (Android)</td><td>Default SMS handler</td><td>User must set MsgVet as default</td></tr>
-<tr><td>SMS (iOS)</td><td>Compose-through + share sheet</td><td>Cannot intercept; compose-only</td></tr>
-<tr><td>X (Twitter)</td><td>API v2</td><td>Rate limits, API tiers</td></tr>
-<tr><td>Meta</td><td>Graph API</td><td>Business accounts only</td></tr>
-</table>
-
-<h3>First-Party MsgVet Chat + Voice</h3>
+<!-- ===== 14. CHANNELS ===== -->
+<h2 id="channels">14. Channel Module System</h2>
 <div class="callout vision">
-<strong>Recommended core.</strong> Consistent enforcement, lower dependency, better kid safety, cheaper per-message cost. Built on Azure Communication Services.
+<strong>Core design:</strong> Every channel is a pluggable module with a standard adapter interface. Adding Teams, Slack, Signal, etc. means implementing the adapter &mdash; the vet pipeline, policy engine, quarantine, and audit are <strong>channel-agnostic</strong>.
 </div>
 
-<table>
-<tr><th>Feature</th><th>MVP</th><th>Phase 2</th></tr>
-<tr><td>1:1 + group chat</td><td>Yes</td><td>&mdash;</td></tr>
-<tr><td>Read receipts, typing indicators</td><td>Yes</td><td>&mdash;</td></tr>
-<tr><td>Voice (VoIP)</td><td>Yes</td><td>&mdash;</td></tr>
-<tr><td>File attachments</td><td>&mdash;</td><td>Yes</td></tr>
-<tr><td>PSTN bridge</td><td>&mdash;</td><td>Yes</td></tr>
-<tr><td>Video calling</td><td>&mdash;</td><td>Phase 3</td></tr>
-</table>
+<h3>Channel Module Architecture</h3>
+<div class="mermaid-wrap">
+  <div class="mermaid-toolbar">
+    <button onclick="mermaidZoom(this,1.2)">Zoom +</button>
+    <button onclick="mermaidZoom(this,0.8)">Zoom &minus;</button>
+    <button onclick="mermaidReset(this)">Reset</button>
+    <button onclick="mermaidFullscreen(this)">Fullscreen</button>
+  </div>
+  <div class="mermaid-viewport">
+    <pre class="mermaid">
+flowchart TB
+  subgraph MODULES["Channel Modules (pluggable)"]
+    MC[MsgVet Chat]
+    MV[MsgVet Voice]
+    EM[Email - IMAP/SMTP]
+    SMS[SMS - Android/iOS]
+    TM[Microsoft Teams]
+    SL[Slack]
+    TW[X / Twitter]
+    MT[Meta - IG/FB]
+    WA[WhatsApp]
+    SIG[Signal]
+    DC[Discord]
+  end
+  subgraph CORE["Platform Core (channel-agnostic)"]
+    NORM[Message Normalizer]
+    VET[Vet Engine]
+    POL[Policy Engine - Global/Group/Individual]
+    Q[Quarantine Service]
+    APP[Approval Service]
+    SCHED[Smart Scheduler]
+    AUD[Audit Service]
+    BILL[Billing Metering]
+  end
+  MODULES -->|Inbound: adapter receives| NORM
+  NORM --> VET
+  VET --> POL
+  POL --> Q
+  POL --> APP
+  POL --> SCHED
+  CORE -->|Outbound: adapter sends| MODULES
+  VET --> AUD
+  Q --> AUD
+  APP --> AUD
+  SCHED --> AUD
+    </pre>
+  </div>
+</div>
 
-<!-- ===== 15. Scheduling ===== -->
-<h2 id="scheduling">15. Scheduling &amp; Delivery Assurance</h2>
+<h3>Module Registry</h3>
+<div class="table-wrap"><table>
+<tr><th>Module</th><th>Type</th><th>Status</th></tr>
+<tr><td>MsgVet Chat</td><td>FIRST_PARTY &mdash; full control</td><td><span class="tag tag-green">MVP</span></td></tr>
+<tr><td>MsgVet Voice</td><td>FIRST_PARTY &mdash; VoIP</td><td><span class="tag tag-green">MVP</span></td></tr>
+<tr><td>Email</td><td>EXTERNAL &mdash; IMAP/SMTP + OAuth</td><td><span class="tag tag-green">MVP</span></td></tr>
+<tr><td>SMS (Android)</td><td>EXTERNAL &mdash; default handler</td><td><span class="tag tag-green">MVP</span></td></tr>
+<tr><td>SMS (iOS)</td><td>COMPOSE_ONLY &mdash; share sheet</td><td><span class="tag tag-green">MVP</span></td></tr>
+<tr><td>Microsoft Teams</td><td>EXTERNAL &mdash; Graph API + Bot Framework</td><td><span class="tag tag-purple">Planned</span></td></tr>
+<tr><td>Slack</td><td>EXTERNAL &mdash; Slack API + Events</td><td><span class="tag tag-purple">Planned</span></td></tr>
+<tr><td>X (Twitter)</td><td>EXTERNAL &mdash; API v2</td><td><span class="tag tag-purple">Planned</span></td></tr>
+<tr><td>Meta (IG/FB)</td><td>EXTERNAL &mdash; Graph API</td><td><span class="tag tag-purple">Planned</span></td></tr>
+<tr><td>WhatsApp</td><td>EXTERNAL &mdash; Business API</td><td><span class="tag tag-purple">Planned</span></td></tr>
+<tr><td>Signal</td><td>EXTERNAL &mdash; CLI bridge</td><td><span class="tag tag-purple">Planned</span></td></tr>
+<tr><td>Discord</td><td>EXTERNAL &mdash; Bot API</td><td><span class="tag tag-purple">Planned</span></td></tr>
+</table></div>
 
-<div class="pipeline">Schedule Request
-  │
-  ├─ 1. Validate: auth, policy snapshot, idempotency key
-  ├─ 2. Preflight vet (policy version pinned)
-  ├─ 3. Enqueue send job (Service Bus)
-  ├─ 4. At scheduled time:
-  │   ├─ Re-vet if policy changed
-  │   ├─ Provider send call
-  │   └─ Capture provider messageId
-  ├─ 5. Verification: receipt check, poll, retry (3x backoff)
-  └─ 6. Final: DELIVERED / SENT / FAILED / EXPIRED</div>
+<!-- ===== 15. SMART SCHEDULING ===== -->
+<h2 id="scheduling">15. Smart Scheduling &amp; Delivery</h2>
 
-<!-- ===== 16. Audit ===== -->
-<h2 id="audit">16. Logging, Auditing &amp; Privacy</h2>
+<div class="callout vision">
+<strong>Context-aware delivery.</strong> Messages aren't just scheduled by time &mdash; they fire based on state, geofence, activity, or combinations. "Send after he lands AND it's after 9AM." "Text when I leave work." "Send 'I'm here' when I arrive."
+</div>
 
-<h3>Event Categories</h3>
-<table>
+<h3>Smart Schedule Triggers</h3>
+<div class="mermaid-wrap">
+  <div class="mermaid-toolbar">
+    <button onclick="mermaidZoom(this,1.2)">Zoom +</button>
+    <button onclick="mermaidZoom(this,0.8)">Zoom &minus;</button>
+    <button onclick="mermaidReset(this)">Reset</button>
+    <button onclick="mermaidFullscreen(this)">Fullscreen</button>
+  </div>
+  <div class="mermaid-viewport">
+    <pre class="mermaid">
+flowchart TD
+  MSG[Queued Message] --> EVAL{Evaluate Triggers}
+  EVAL --> TIME[Time Trigger: after 3:30 PM]
+  EVAL --> GEO[Geofence Trigger]
+  EVAL --> STATE[Recipient State Trigger]
+  EVAL --> COMBO[Combination Trigger]
+  GEO --> GL[I leave location: work/gym/school]
+  GEO --> GA[I arrive at location: home/office/airport]
+  GEO --> GR[Recipient arrives/leaves location]
+  STATE --> SD[Driving ends]
+  STATE --> SF[Flight lands]
+  STATE --> SW[Workout finishes]
+  STATE --> SM[Meeting ends]
+  STATE --> SS[Wakes up / DND off]
+  COMBO --> C1["After he lands AND after 9AM"]
+  COMBO --> C2["After school AND not driving"]
+  COMBO --> C3["When I leave work AND it's not raining"]
+  TIME --> VET[Re-vet against current policy]
+  GEO --> VET
+  STATE --> VET
+  COMBO --> VET
+  VET --> SEND[Send via channel module]
+  SEND --> VERIFY[Delivery verification]
+    </pre>
+  </div>
+</div>
+
+<h3>Trigger Types</h3>
+<div class="table-wrap"><table>
+<tr><th>Trigger</th><th>Source</th><th>Examples</th></tr>
+<tr><td><strong>Time</strong></td><td>Clock</td><td>After 3:30 PM, after biz hours, next Monday 9 AM</td></tr>
+<tr><td><strong>Geofence: sender</strong></td><td>Phone/Watch GPS</td><td>"When I leave work," "when I arrive home," "when I leave the gym"</td></tr>
+<tr><td><strong>Geofence: recipient</strong></td><td>Shared location / presence API</td><td>"When they arrive at airport" (requires consent/sharing)</td></tr>
+<tr><td><strong>Sender state</strong></td><td>Phone/Watch sensors</td><td>Workout ends, driving stops, DND off, wakes up</td></tr>
+<tr><td><strong>Recipient state</strong></td><td>Presence/calendar APIs</td><td>Meeting ends, flight lands, workout done, available again</td></tr>
+<tr><td><strong>Combination (AND)</strong></td><td>Multiple triggers</td><td>"After he lands AND it's after 9 AM," "after school AND not driving"</td></tr>
+<tr><td><strong>Auto-message</strong></td><td>Geofence + template</td><td>"I'm here" on arrival, "just leaving now" on departure, "on my way" on route start</td></tr>
+</table></div>
+
+<h3>Auto-Message Templates</h3>
+<div class="table-wrap"><table>
+<tr><th>Trigger</th><th>Auto-Message</th><th>Audience</th></tr>
+<tr><td>Leave work geofence</td><td>"Just leaving work now"</td><td>Configurable: spouse, family group</td></tr>
+<tr><td>Arrive home geofence</td><td>"I'm home"</td><td>Configurable</td></tr>
+<tr><td>Arrive at destination</td><td>"I'm here"</td><td>Person you're meeting</td></tr>
+<tr><td>Route started (nav active)</td><td>"On my way, ETA [X] min"</td><td>Configurable</td></tr>
+<tr><td>Flight landed (state change)</td><td>"Just landed"</td><td>Configurable</td></tr>
+<tr><td>Workout ended</td><td>"Done at the gym"</td><td>Configurable</td></tr>
+</table></div>
+
+<h3>Delivery Pipeline</h3>
+<div class="mermaid-wrap">
+  <div class="mermaid-toolbar">
+    <button onclick="mermaidZoom(this,1.2)">Zoom +</button>
+    <button onclick="mermaidZoom(this,0.8)">Zoom &minus;</button>
+    <button onclick="mermaidReset(this)">Reset</button>
+    <button onclick="mermaidFullscreen(this)">Fullscreen</button>
+  </div>
+  <div class="mermaid-viewport">
+    <pre class="mermaid">
+flowchart LR
+  A[Schedule request] --> B[Validate + idempotency key]
+  B --> C[Pin policy snapshot]
+  C --> D[Enqueue - Service Bus]
+  D --> E[Trigger fires]
+  E --> F{Policy changed?}
+  F -->|Yes| G[Re-vet]
+  F -->|No| H[Channel adapter send]
+  G --> H
+  H --> I[Capture provider messageId]
+  I --> J[Verify delivery receipt]
+  J --> K{Delivered?}
+  K -->|Yes| L[DELIVERED]
+  K -->|No receipt| M[SENT - best effort]
+  K -->|Failed| N[Retry 3x backoff]
+  N -->|Max retries| O[FAILED - dead letter]
+    </pre>
+  </div>
+</div>
+
+<!-- ===== 16. AUDIT ===== -->
+<h2 id="audit">16. Logging, Audit &amp; Privacy</h2>
+<div class="table-wrap"><table>
 <tr><th>Category</th><th>Events</th></tr>
-<tr><td>Auth/Session</td><td>login, logout, MFA, device trust</td></tr>
-<tr><td>Account Linking</td><td>OAuth grant, scope change, disconnect</td></tr>
-<tr><td>Policy Changes</td><td>create, update, delete, rule matrix diffs</td></tr>
-<tr><td>Vetting</td><td>input hash, model version, scores, decision, cost</td></tr>
+<tr><td>Auth</td><td>login, logout, MFA, device trust</td></tr>
+<tr><td>Vetting</td><td>input hash, model, scores, decision, cost</td></tr>
 <tr><td>Quarantine</td><td>create, release, reject, expire</td></tr>
 <tr><td>Approvals</td><td>request, approve, reject, escalate, bypass</td></tr>
 <tr><td>Sends</td><td>attempted, sent, failed, retried, verified</td></tr>
-<tr><td>Delegation</td><td>grant, revoke, role changes</td></tr>
-<tr><td>Billing</td><td>usage events, invoice, payment, budget alerts</td></tr>
+<tr><td>Smart Schedule</td><td>trigger armed, trigger fired, geofence enter/exit, state change</td></tr>
 <tr><td>Kid Safety</td><td>crisis escalation, parent notifications, contact changes</td></tr>
-</table>
+</table></div>
 
-<h3>COPPA Compliance</h3>
-<table>
+<h3>COPPA</h3>
+<div class="table-wrap"><table>
 <tr><th>Requirement</th><th>Implementation</th></tr>
-<tr><td>Verifiable parental consent</td><td>Email + credit card OR signed consent form</td></tr>
-<tr><td>Data minimization</td><td>Content storage off by default; metadata-only mode</td></tr>
-<tr><td>Parental access/delete</td><td>Parent dashboard: view all kid data, delete on request</td></tr>
-<tr><td>No behavioral advertising</td><td>No ad targeting on kid accounts, ever</td></tr>
-<tr><td>Auto-purge</td><td>Kid data purged after configurable window (default: 90 days)</td></tr>
-</table>
+<tr><td>Parental consent</td><td>Email + credit card OR signed form</td></tr>
+<tr><td>Data minimization</td><td>Content storage off by default</td></tr>
+<tr><td>Parental access/delete</td><td>Dashboard: view all, delete on request</td></tr>
+<tr><td>No ad targeting</td><td>Never on kid accounts</td></tr>
+<tr><td>Auto-purge</td><td>Default 90 days</td></tr>
+</table></div>
 
-<!-- ===== 17. API ===== -->
-<h2 id="api">17. API Design &amp; Pagination</h2>
-
-<p>All list APIs support cursor pagination:</p>
-<pre><code>GET /api/v1/{resource}?pageSize=25&amp;cursor={nextCursor}
-
-Response:
-{
-  "data": [...],
-  "pagination": {
-    "pageSize": 25,
-    "nextCursor": "eyJ0IjoxNjk...",
-    "hasMore": true,
-    "totalEstimate": 1234
-  }
-}</code></pre>
-<p>Allowed page sizes: <code>25</code> (default), <code>50</code>, <code>100</code>, <code>500</code>, <code>1000</code>.</p>
-
-<!-- ===== 18. Billing ===== -->
-<h2 id="billing">18. Billing &amp; Usage Metering</h2>
-
-<h3>Plans</h3>
-<table>
+<!-- ===== 17. BILLING ===== -->
+<h2 id="billing">17. Billing</h2>
+<div class="table-wrap"><table>
 <tr><th>Plan</th><th>Target</th><th>Included</th><th>Price</th></tr>
-<tr><td>Family Free</td><td>Trial</td><td>100 vet actions/mo, 1 kid, chat only</td><td>$0</td></tr>
-<tr><td>Family Safe</td><td>Families</td><td>2,000 vet actions/mo, 5 accounts, SMS</td><td>$9.99/mo</td></tr>
-<tr><td>Adult Guard</td><td>Individuals</td><td>1,000 vet actions/mo, all packs</td><td>$4.99/mo</td></tr>
-<tr><td>Corporate</td><td>Orgs</td><td>Custom volume, delegation, audit</td><td>$29.99/seat/mo</td></tr>
-<tr><td>Enterprise</td><td>Large orgs</td><td>Unlimited, SSO, custom policies</td><td>Custom</td></tr>
-</table>
+<tr><td>Family Free</td><td>Trial</td><td>100 vets/mo, 1 kid, chat only</td><td>$0</td></tr>
+<tr><td>Family Safe</td><td>Families</td><td>2K vets/mo, 5 accounts, SMS</td><td>$9.99/mo</td></tr>
+<tr><td>Adult Guard</td><td>Individuals</td><td>1K vets/mo, all packs</td><td>$4.99/mo</td></tr>
+<tr><td>Corporate</td><td>Orgs</td><td>Custom, delegation, audit</td><td>$29.99/seat/mo</td></tr>
+<tr><td>Enterprise</td><td>Large</td><td>Unlimited, SSO, custom</td><td>Custom</td></tr>
+</table></div>
 
-<!-- ===== 19. LLM ===== -->
-<h2 id="llm">19. LLM Strategy &amp; Cost Optimization</h2>
-
-<h3>Two-Tier Inference</h3>
-<table>
-<tr><th>Tier</th><th>Models</th><th>Use Cases</th><th>Est. Cost</th></tr>
-<tr><td><span class="tag tag-green">Cheap</span></td><td>GPT-4o-mini, Gemini Flash, Haiku</td><td>Standard classification, basic rewrites</td><td>~$0.01&ndash;0.03 / 1K msgs</td></tr>
-<tr><td><span class="tag tag-warn">Strong</span></td><td>GPT-4o, Gemini Pro, Sonnet</td><td>Edge cases, legal/PR, polished rewrites</td><td>~$0.10&ndash;0.30 / 1K msgs</td></tr>
-</table>
-
-<h3>Cost Controls</h3>
-<table>
+<!-- ===== 18. LLM ===== -->
+<h2 id="llm">18. LLM Strategy</h2>
+<div class="table-wrap"><table>
+<tr><th>Tier</th><th>Models</th><th>Use</th><th>Cost</th></tr>
+<tr><td><span class="tag tag-green">Cheap</span></td><td>GPT-4o-mini, Flash, Haiku</td><td>Standard classify, basic rewrites</td><td>~$0.01-0.03/1K</td></tr>
+<tr><td><span class="tag tag-warn">Strong</span></td><td>GPT-4o, Pro, Sonnet</td><td>Edge cases, legal/PR, polished</td><td>~$0.10-0.30/1K</td></tr>
+</table></div>
+<div class="table-wrap"><table>
 <tr><th>Strategy</th><th>Savings</th></tr>
-<tr><td>Deterministic rules first (regex, allow/deny lists)</td><td>30&ndash;50% messages need no LLM</td></tr>
-<tr><td>Prompt caching (system prompts + policies)</td><td>50&ndash;90% on cached tokens</td></tr>
-<tr><td>Batch processing for non-interactive jobs</td><td>50% batch discount</td></tr>
-<tr><td>Minimal context (summaries, not full history)</td><td>60&ndash;80% token reduction</td></tr>
-<tr><td>Rewrite-on-demand only</td><td>~70% rewrite cost elimination</td></tr>
-<tr><td>Model routing: cheap first, escalate on low confidence</td><td>80% cheap / 20% strong split</td></tr>
-</table>
+<tr><td>Deterministic rules first</td><td>30-50% need no LLM</td></tr>
+<tr><td>Prompt caching</td><td>50-90% cached tokens</td></tr>
+<tr><td>Rewrite on-demand only</td><td>~70% rewrite cost gone</td></tr>
+<tr><td>Model routing: cheap default</td><td>80/20 cheap/strong split</td></tr>
+</table></div>
 
-<!-- ===== 20. Architecture ===== -->
-<h2 id="architecture">20. System Architecture</h2>
+<!-- ===== 19. ARCHITECTURE ===== -->
+<h2 id="architecture">19. Architecture</h2>
+<div class="mermaid-wrap">
+  <div class="mermaid-toolbar">
+    <button onclick="mermaidZoom(this,1.2)">Zoom +</button>
+    <button onclick="mermaidZoom(this,0.8)">Zoom &minus;</button>
+    <button onclick="mermaidReset(this)">Reset</button>
+    <button onclick="mermaidFullscreen(this)">Fullscreen</button>
+  </div>
+  <div class="mermaid-viewport">
+    <pre class="mermaid">
+flowchart TB
+  subgraph CLIENTS["Client Layer"]
+    IOS[iOS - SwiftUI]
+    AND[Android - Compose]
+    WATCH[Watch - WatchOS / WearOS]
+    WEB[Web Console]
+    ADMIN[Admin Console]
+  end
+  subgraph GW["API Gateway"]
+    APIM[Azure API Management]
+  end
+  subgraph SERVICES["Service Layer"]
+    AUTH[Auth]
+    MSGSVC[Messaging]
+    VETENG[Vet Engine]
+    POLENG[Policy Engine]
+    QSVC[Quarantine]
+    APPSVC[Approval]
+    SCHEDSVC[Smart Scheduler]
+    CHANSVC[Channel Adapters]
+    BILLSVC[Billing]
+    AUDSVC[Audit]
+    NOTIFSVC[Notifications]
+    NUMSVC[Number Provisioner]
+  end
+  subgraph DATA["Data Layer"]
+    COSMOS[(Cosmos DB)]
+    SBUS[Service Bus]
+    BLOB[Blob Storage]
+    REDIS[Redis Cache]
+    KV[Key Vault]
+    AI[Azure OpenAI]
+    ACS[Azure Comms Svc]
+    APPINS[App Insights]
+  end
+  CLIENTS --> GW
+  GW --> SERVICES
+  SERVICES --> DATA
+    </pre>
+  </div>
+</div>
 
-<div class="diagram">┌─────────────────────────────────────────────────────────────┐
-│                     CLIENT LAYER                            │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────────┐ │
-│  │ iOS App  │  │Android   │  │ Web      │  │ Admin      │ │
-│  │(SwiftUI) │  │(Compose) │  │ Console  │  │ Console    │ │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └─────┬──────┘ │
-└───────┼──────────────┼──────────────┼──────────────┼────────┘
-        └──────────────┴──────┬───────┴──────────────┘
-                              │
-┌─────────────────────────────┼───────────────────────────────┐
-│                     API GATEWAY                             │
-│  Azure API Management: Auth, Rate Limiting, TLS, Routing   │
-└─────────────────────────────┼───────────────────────────────┘
-                              │
-┌─────────────────────────────┼───────────────────────────────┐
-│                     SERVICE LAYER                           │
-│  Auth │ Messaging │ Vet Engine │ Policy Engine              │
-│  Quarantine │ Approval │ Scheduler │ Channel Adapters       │
-│  Billing │ Audit │ Notifications │ Number Provisioner       │
-└─────────────────────────────┼───────────────────────────────┘
-                              │
-┌─────────────────────────────┼───────────────────────────────┐
-│                     DATA LAYER                              │
-│  Cosmos DB │ Service Bus │ Blob Storage │ Redis │ Key Vault │
-│  App Insights │ Azure Communication Services                │
-└─────────────────────────────────────────────────────────────┘</div>
-
-<!-- ===== 21. Tech Stack ===== -->
-<h2 id="tech-stack">21. Technology Stack</h2>
-
-<h3>Backend (Azure-first)</h3>
-<table>
-<tr><th>Component</th><th>Technology</th></tr>
-<tr><td>Runtime</td><td>.NET 9 Minimal APIs</td></tr>
-<tr><td>Database</td><td>Azure Cosmos DB (partition by tenantId)</td></tr>
-<tr><td>Cache</td><td>Azure Cache for Redis</td></tr>
+<!-- ===== 20. TECH STACK ===== -->
+<h2 id="tech-stack">20. Tech Stack</h2>
+<div class="table-wrap"><table>
+<tr><th>Layer</th><th>Technology</th></tr>
+<tr><td>Backend</td><td>.NET 9 Minimal APIs</td></tr>
+<tr><td>Database</td><td>Azure Cosmos DB (partition: tenantId)</td></tr>
+<tr><td>Cache</td><td>Azure Redis</td></tr>
 <tr><td>Queue</td><td>Azure Service Bus</td></tr>
-<tr><td>Orchestration</td><td>Azure Durable Functions</td></tr>
-<tr><td>Secrets</td><td>Azure Key Vault</td></tr>
-<tr><td>Storage</td><td>Azure Blob Storage</td></tr>
-<tr><td>AI</td><td>Azure OpenAI (GPT-4o-mini + GPT-4o)</td></tr>
-<tr><td>Communications</td><td>Azure Communication Services</td></tr>
-</table>
-
-<h3>Frontend</h3>
-<table>
-<tr><th>Platform</th><th>Technology</th></tr>
+<tr><td>AI</td><td>Azure OpenAI (4o-mini + 4o)</td></tr>
+<tr><td>Comms</td><td>Azure Communication Services</td></tr>
 <tr><td>iOS</td><td>SwiftUI + Combine</td></tr>
 <tr><td>Android</td><td>Jetpack Compose + Kotlin</td></tr>
-<tr><td>Web Console</td><td>Angular 21 (following InfiniteCabinet patterns)</td></tr>
-<tr><td>Real-time</td><td>SignalR / WebSocket</td></tr>
-</table>
+<tr><td>Watch</td><td>WatchOS (SwiftUI) + Wear OS (Compose)</td></tr>
+<tr><td>Web</td><td>Angular 21</td></tr>
+<tr><td>Infra</td><td>Azure Container Apps, Front Door</td></tr>
+</table></div>
 
-<!-- ===== 22. Data Model ===== -->
-<h2 id="data-model">22. Data Model</h2>
-
-<h3>Core Entities</h3>
-<pre><code>Tenant { id, type: FAMILY|ORG, name, plan, settings, createdAt }
-User { id, tenantId, email, role, policyProfiles[], deviceTrust[], createdAt }
-Account { id, userId, tenantId, channelType, credentials(KeyVault), status, linkedAt }
-Message { id, tenantId, conversationId, senderId, recipientId, channel, direction,
-          content(encrypted), vetReportId, status, scheduledAt, createdAt }
-VetReport { id, messageId, direction, modelVersion, modelTier, scores, riskTags,
-            decision, matchedRules[], rewriteSuggestions[], cost }
-QuarantineRecord { id, tenantId, direction, message, vetReport, status, reviewedBy,
-                   reviewNote, expiresAt }
-ApprovalWorkflow { id, messageId, mode, requiredApprovers[], quorum, sla, status }
+<!-- ===== 21. DATA MODEL ===== -->
+<h2 id="data-model">21. Data Model</h2>
+<pre><code>Tenant { id, type: FAMILY|ORG, name, plan, settings }
+User { id, tenantId, role, policyProfiles[], deviceTrust[] }
+Account { id, userId, tenantId, channelModule, credentials(KeyVault), status }
+Message { id, tenantId, conversationId, sender, recipient, channel, direction,
+          content(encrypted), vetReportId, status, smartScheduleId }
+VetReport { id, messageId, modelTier, scores, riskTags, decision, rewrites, cost }
+QuarantineRecord { id, tenantId, direction, message, vetReport, status, reviewedBy }
+ApprovalWorkflow { id, messageId, mode, approvers[], quorum, sla, status }
+SmartSchedule { id, messageId, triggers[], triggerLogic: AND|OR, status, firedAt }
+RuleEntry { id, tenantId, scope: GLOBAL|GROUP|INDIVIDUAL, targetRef, conditions, action }
 AuditEvent { id, tenantId, eventType, actorId, payload, previousHash, hash, timestamp }</code></pre>
 
-<!-- ===== 23. Security ===== -->
-<h2 id="security">23. Security Architecture</h2>
-
-<table>
+<!-- ===== 22. SECURITY ===== -->
+<h2 id="security">22. Security</h2>
+<div class="table-wrap"><table>
 <tr><th>Layer</th><th>Method</th></tr>
-<tr><td>In transit</td><td>TLS 1.3 everywhere</td></tr>
-<tr><td>At rest</td><td>Azure SSE + customer-managed keys (corporate tier)</td></tr>
-<tr><td>Message content</td><td>AES-256 per-tenant; key in Key Vault</td></tr>
-<tr><td>Alias labels</td><td>User-specific encryption; server cannot read</td></tr>
-<tr><td>Credentials</td><td>Key Vault references only; never in DB</td></tr>
-<tr><td>Tenant isolation</td><td>Every query filtered by tenantId at data layer</td></tr>
-<tr><td>Rate limiting</td><td>Per-tenant, per-user, per-endpoint</td></tr>
-</table>
+<tr><td>Transit</td><td>TLS 1.3</td></tr>
+<tr><td>At rest</td><td>Azure SSE + customer keys (corp)</td></tr>
+<tr><td>Messages</td><td>AES-256 per-tenant, Key Vault</td></tr>
+<tr><td>Aliases</td><td>User-specific encryption, server-blind</td></tr>
+<tr><td>Isolation</td><td>Every query filtered by tenantId</td></tr>
+<tr><td>Rate limits</td><td>Per-tenant, per-user, per-endpoint</td></tr>
+</table></div>
 
-<!-- ===== 24. Milestones ===== -->
-<h2 id="milestones">24. Build Order &amp; Milestones</h2>
-
+<!-- ===== 23. MILESTONES ===== -->
+<h2 id="milestones">23. Milestones</h2>
 <div class="milestone kid">
-<h4>Milestone A: Kid-First Foundation <span class="tag tag-green">Weeks 1&ndash;8</span></h4>
-<p>Family tenants, parent/child accounts, COPPA consent, kid policy engine, inbound filtering pipeline, outbound safety, quarantine system, parent dashboard, first-party chat MVP, logging, pagination, billing scaffolding, push notifications.</p>
+<h4>A: Kid-First Foundation <span class="tag tag-green">Wk 1-8</span></h4>
+<p>Family tenants, COPPA consent, kid policy engine, inbound/outbound filtering, quarantine, parent dashboard, first-party chat, Watch alerts (parent), logging, pagination, billing scaffold.</p>
 </div>
-
 <div class="milestone adult">
-<h4>Milestone B: Adult Consumer Layer <span class="tag">Weeks 9&ndash;14</span></h4>
-<p>Adult accounts, policy packs (Drunk/Ex/Professional), regret controls, intent capture + rewrites, scheduling service, alias groups, VoIP voice, email adapter, alias phone numbers.</p>
+<h4>B: Adult Consumer <span class="tag">Wk 9-14</span></h4>
+<p>Policy packs, regret controls, intent capture, smart scheduling (time + geofence + state), alias groups, VoIP, email adapter, Watch geofence triggers, auto-messages.</p>
 </div>
-
 <div class="milestone corp">
-<h4>Milestone C: Corporate Layer <span class="tag tag-purple">Weeks 15&ndash;20</span></h4>
-<p>Org tenants, role hierarchy, delegation model, quorum approvals, audit exports/retention, corporate policy templates, admin console, SSO prep.</p>
+<h4>C: Corporate <span class="tag tag-purple">Wk 15-20</span></h4>
+<p>Org tenants, delegation, quorum approvals, audit exports, corporate packs, admin console, Teams + Slack channel modules, SSO prep.</p>
+</div>
+<div class="milestone" style="border-left:3px solid var(--warn)">
+<h4>D: Hardening &amp; Launch <span class="tag tag-warn">Wk 21-24</span></h4>
+<p>Load test (10K concurrent, 100K msgs/hr), security audit, COPPA review, app store + Watch store submissions, beta (500 families, 50 corp).</p>
 </div>
 
-<div class="milestone" style="border-left: 3px solid var(--warn);">
-<h4>Milestone D: Hardening &amp; Launch <span class="tag tag-warn">Weeks 21&ndash;24</span></h4>
-<p>Load testing (10K concurrent, 100K msgs/hr), security audit, pen test, COPPA review, cost optimization, app store submissions, documentation, beta program (500 families, 50 corporate).</p>
-</div>
-
-<!-- ===== 25. Ideas ===== -->
-<h2 id="ideas">25. High-Leverage Ideas</h2>
-
-<table>
-<tr><th>#</th><th>Idea</th><th>Impact</th><th>Effort</th></tr>
-<tr><td>1</td><td><strong>Conversation style fingerprint</strong> &mdash; flag anomalies</td><td><span class="tag tag-red">HIGH</span></td><td>MEDIUM</td></tr>
-<tr><td>2</td><td><strong>Regret window everywhere</strong> &mdash; 30&ndash;120s delay</td><td><span class="tag tag-red">HIGH</span></td><td>LOW</td></tr>
-<tr><td>3</td><td><strong>Safety escalations</strong> &mdash; crisis resources link</td><td><span class="tag tag-red">CRITICAL</span></td><td>LOW</td></tr>
-<tr><td>4</td><td><strong>Policy simulation / dry-run</strong></td><td><span class="tag tag-red">HIGH</span></td><td>MEDIUM</td></tr>
-<tr><td>5</td><td><strong>Red-team mode</strong> &mdash; adversarial testing</td><td><span class="tag tag-red">HIGH</span></td><td>MEDIUM</td></tr>
-<tr><td>6</td><td><strong>Kid "report" button</strong></td><td><span class="tag tag-red">HIGH</span></td><td>LOW</td></tr>
-<tr><td>7</td><td><strong>Weekly safety digest</strong> for parents</td><td><span class="tag tag-red">HIGH</span></td><td>MEDIUM</td></tr>
-<tr><td>8</td><td><strong>Provider cost preview</strong> before SMS send</td><td><span class="tag">MEDIUM</span></td><td>LOW</td></tr>
-</table>
-
-<!-- ===== 26. Risks ===== -->
-<h2 id="risks">26. Risks &amp; Mitigations</h2>
-
-<table>
+<!-- ===== 24. RISKS ===== -->
+<h2 id="risks">24. Risks</h2>
+<div class="table-wrap"><table>
 <tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr>
-<tr><td>iOS SMS interception not possible</td><td><span class="tag tag-red">HIGH</span></td><td>First-party chat primary; iOS compose-through</td></tr>
-<tr><td>COPPA compliance failure</td><td><span class="tag tag-red">CRITICAL</span></td><td>Legal review, verifiable consent, minimal retention</td></tr>
-<tr><td>LLM false positives (over-blocking)</td><td><span class="tag tag-red">HIGH</span></td><td>Configurable thresholds, human review, parent override</td></tr>
-<tr><td>LLM false negatives (missed threats)</td><td><span class="tag tag-red">CRITICAL</span></td><td>Deterministic filters first, always-escalate severe</td></tr>
-<tr><td>Messaging costs explode</td><td><span class="tag tag-red">HIGH</span></td><td>LCR, in-platform comms, cost preview, hard caps</td></tr>
-<tr><td>Kids circumvent controls</td><td><span class="tag tag-warn">MEDIUM</span></td><td>Device trust, behavioral anomaly detection</td></tr>
-<tr><td>Vetting latency (&gt;200ms)</td><td><span class="tag tag-red">HIGH</span></td><td>Cheap model + caching + deterministic pre-filter</td></tr>
-</table>
+<tr><td>iOS SMS impossible</td><td><span class="tag tag-red">HIGH</span></td><td>First-party chat primary; compose-through</td></tr>
+<tr><td>COPPA failure</td><td><span class="tag tag-red">CRITICAL</span></td><td>Legal review, verified consent, minimal retention</td></tr>
+<tr><td>LLM false positives</td><td><span class="tag tag-red">HIGH</span></td><td>Configurable thresholds, parent override</td></tr>
+<tr><td>LLM false negatives</td><td><span class="tag tag-red">CRITICAL</span></td><td>Deterministic first, always-escalate severe</td></tr>
+<tr><td>Cost explosion</td><td><span class="tag tag-red">HIGH</span></td><td>LCR, in-platform, cost preview, hard caps</td></tr>
+<tr><td>Geofence battery drain</td><td><span class="tag tag-warn">MEDIUM</span></td><td>Significant-change monitoring, Watch offload</td></tr>
+<tr><td>State detection accuracy</td><td><span class="tag tag-warn">MEDIUM</span></td><td>Confirm before send, user override, learn patterns</td></tr>
+</table></div>
 
-<!-- ===== 27. Open Questions ===== -->
-<h2 id="open">27. Open Questions</h2>
-
-<table>
-<tr><th>#</th><th>Question</th><th>Options</th></tr>
-<tr><td>1</td><td>Target kid age bands</td><td>Under-13 only vs Under-13 + 13&ndash;17</td></tr>
-<tr><td>2</td><td>Default retention settings</td><td>30 / 90 / 365 days per tier</td></tr>
-<tr><td>3</td><td>MVP comms scope</td><td>Chat-only vs Chat + Voice</td></tr>
-<tr><td>4</td><td>Must-have external adapters</td><td>Email only vs Email + SMS</td></tr>
-<tr><td>5</td><td>Billing model</td><td>Pure metered vs subscription + included</td></tr>
-<tr><td>6</td><td>First-party chat encryption</td><td>E2E in MVP or phase 2</td></tr>
-<tr><td>7</td><td>Android default SMS handler</td><td>Pursue now or phase 2</td></tr>
-<tr><td>8</td><td>Web console technology</td><td>Angular (IC pattern) vs React/Next</td></tr>
-<tr><td>9</td><td>Multi-language support</td><td>English-only MVP vs i18n from start</td></tr>
-</table>
-
-<!-- ===== 28. Glossary ===== -->
-<h2 id="glossary">28. Glossary</h2>
-
-<table>
+<!-- ===== 25. GLOSSARY ===== -->
+<h2 id="glossary">25. Glossary</h2>
+<div class="table-wrap"><table>
 <tr><th>Term</th><th>Definition</th></tr>
-<tr><td>A2P</td><td>Application-to-Person messaging</td></tr>
-<tr><td>ACS</td><td>Azure Communication Services</td></tr>
-<tr><td>COPPA</td><td>Children's Online Privacy Protection Act</td></tr>
-<tr><td>DLQ</td><td>Dead Letter Queue</td></tr>
-<tr><td>LCR</td><td>Least-Cost Routing</td></tr>
-<tr><td>LLM</td><td>Large Language Model</td></tr>
-<tr><td>Policy Pack</td><td>Pre-configured rule set (Kid Safe, Drunk Guard, etc.)</td></tr>
-<tr><td>Quarantine</td><td>Holding area for messages that failed vetting</td></tr>
-<tr><td>Rule Matrix</td><td>Conditional rules: who &times; where &times; when &times; what = action</td></tr>
-<tr><td>TCR</td><td>The Campaign Registry (US A2P SMS)</td></tr>
-<tr><td>Tenant</td><td>Top-level org unit (Family or Org)</td></tr>
+<tr><td>Channel Module</td><td>Pluggable adapter for any messaging channel</td></tr>
+<tr><td>Smart Schedule</td><td>Context-aware message delivery (time + geo + state + combo)</td></tr>
+<tr><td>Rule Hierarchy</td><td>Global &rarr; Group &rarr; Individual, most specific wins</td></tr>
+<tr><td>Geofence Trigger</td><td>Send/hold based on GPS location enter/exit</td></tr>
+<tr><td>State Signal</td><td>Activity detection: driving, flying, workout, meeting, DND</td></tr>
 <tr><td>Vet Report</td><td>AI analysis: scores, tags, decision, rewrites</td></tr>
-<tr><td>10DLC</td><td>10-Digit Long Code (US A2P SMS phone numbers)</td></tr>
-</table>
+<tr><td>Quarantine</td><td>Holding area for blocked messages</td></tr>
+<tr><td>COPPA</td><td>Children's Online Privacy Protection Act</td></tr>
+<tr><td>LCR</td><td>Least-Cost Routing for SMS/voice</td></tr>
+<tr><td>A2P / 10DLC</td><td>App-to-person SMS via 10-digit long codes</td></tr>
+</table></div>
 
 </div>
 
-<footer>MsgVet Documentation &mdash; v1.0.0 PRD &mdash; April 6, 2026 &mdash; Draft for Review</footer>
+<footer>MsgVet PRD v1.0.0 &mdash; April 6, 2026 &mdash; Draft</footer>
+
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#1f6feb',
+    primaryTextColor: '#c9d1d9',
+    primaryBorderColor: '#30363d',
+    lineColor: '#58a6ff',
+    secondaryColor: '#161b22',
+    tertiaryColor: '#0d1117',
+    background: '#0d1117',
+    mainBkg: '#161b22',
+    nodeBorder: '#30363d',
+    clusterBkg: '#161b2288',
+    clusterBorder: '#30363d',
+    titleColor: '#f0f6fc',
+    edgeLabelBackground: '#161b22'
+  },
+  flowchart: { curve: 'basis', padding: 16 },
+  fontSize: 13
+});
+
+function mermaidZoom(btn, factor) {
+  const vp = btn.closest('.mermaid-wrap').querySelector('.mermaid-viewport');
+  const svg = vp.querySelector('svg');
+  if (!svg) return;
+  const cur = parseFloat(svg.style.transform?.match(/scale\(([^)]+)\)/)?.[1] || 1);
+  const nw = Math.max(0.3, Math.min(4, cur * factor));
+  svg.style.transform = 'scale(' + nw + ')';
+  svg.style.transformOrigin = 'top left';
+}
+function mermaidReset(btn) {
+  const svg = btn.closest('.mermaid-wrap').querySelector('svg');
+  if (svg) svg.style.transform = 'scale(1)';
+}
+function mermaidFullscreen(btn) {
+  const vp = btn.closest('.mermaid-wrap').querySelector('.mermaid-viewport');
+  vp.classList.toggle('fullscreen');
+  btn.textContent = vp.classList.contains('fullscreen') ? 'Exit' : 'Fullscreen';
+}
+</script>
 </body>
 </html>

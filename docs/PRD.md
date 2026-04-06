@@ -177,15 +177,16 @@ MsgVet can:
 
 | Primitive | Description |
 |-----------|-------------|
-| **Channel** | External (SMS/email/X) or Internal (MsgVet Chat/Voice) |
-| **Account** | A connected identity (Gmail inbox, X handle, MsgVet ID) |
+| **Channel Module** | Pluggable adapter: MsgVet Chat, SMS, Email, Teams, Slack, X, etc. |
+| **Account** | A connected identity (Gmail inbox, X handle, Teams account, MsgVet ID) |
 | **Alias Identity** | Label + optional phone/handle for compartmentalization |
-| **Group** | Relationship buckets (public/family/work) + sensitive via aliases |
+| **Group** | Relationship buckets: family, friends, work, public + sensitive via aliases |
 | **Policy Profile** | Named ruleset (Kid Safe, Drunk Guard, C-suite, etc.) |
-| **Rule Matrix** | Conditional rules: account x channel x group x time x location x state |
+| **Rule Hierarchy** | Global rules → Group rules (family/friends/work) → Individual contact rules |
 | **Vet Report** | Scores + tags + pass/warn/block/approve + rewrite suggestions |
 | **Quarantine** | Holding area for blocked messages + structured review workflow |
 | **Approval Workflow** | AI gate, human gate, mixed gate, quorum, SLA/escalation |
+| **Smart Schedule** | Context-aware delivery: time + geofence + state + activity combos |
 | **Delegation** | Draft/send/approve permissions per account/profile |
 | **Tenant** | Family (parent admin + child users) or Org (roles hierarchy) |
 
@@ -222,8 +223,22 @@ Tenant (Family | Org)
 | **Family Dashboard** | Kid activity summary, quarantine queue, policy controls (parent-only) |
 | **Settings** | Aliases, policies, billing, privacy, connected accounts |
 | **Voice** | VoIP calling (phase: PSTN bridge) |
+| **Smart Schedule** | Pending sends, geofence triggers, state-aware queue |
 
-### 6.2 Web (MVP for Admin/Ops)
+### 6.2 Watch App (Apple Watch / Wear OS)
+
+> Wrist-first alerts and quick actions. The watch is a critical surface for time-sensitive notifications, especially for parents and approvers.
+
+| Feature | Description |
+|---------|-------------|
+| **Parent Alerts** | Kid quarantine notifications with glanceable severity + sender. Tap to release/block from wrist. |
+| **Approval Actions** | Approve/reject pending messages with one tap. Vet report summary on wrist. |
+| **Geofence Triggers** | Watch detects arrival/departure, fires scheduled sends: "I'm here," "Just left work." |
+| **State Detection** | Workout active, driving (CarPlay/Auto), DND → feeds into rule engine state signals. |
+| **Quick Compose** | Voice dictation + template sends through vet pipeline. |
+| **Status Glance** | Complication: unread count, quarantine count, pending approvals badge. |
+
+### 6.3 Web (MVP for Admin/Ops)
 
 | Screen | Description |
 |--------|-------------|
@@ -476,7 +491,43 @@ QuarantineRecord:
 
 ---
 
-## 12. Policy Engine & Rule Matrix
+## 12. Rule Hierarchy & Policy Engine
+
+> **Three-tier rule hierarchy:** Global rules apply to everyone. Group rules (families, friends, work, custom) override globals. Individual contact rules are the most specific and override everything. Stricter always wins at the same level.
+
+### 12.0 Rule Hierarchy
+
+```
+GLOBAL RULES (apply to all contacts)
+  │  e.g., "No sends after midnight," "All outbound vetted"
+  │
+  ├─ GROUP RULES (override global for members of that group)
+  │   ├─ Family: no time restrictions
+  │   ├─ Work: professional tone required, biz hours only
+  │   ├─ Friends: relaxed language OK
+  │   └─ Custom groups (via aliases)
+  │
+  └─ INDIVIDUAL CONTACT RULES (most specific, override everything)
+      ├─ Ex: HARD BLOCK always
+      ├─ Boss: don't text after 6PM, hold for morning
+      ├─ Mom: no restrictions
+      ├─ Kid's friend: don't text until after school (3:30 PM)
+      └─ Contractor: biz hours only, professional tone
+```
+
+#### Rule Scope Examples
+
+| Scope | Example Rule | Effect |
+|-------|-------------|--------|
+| **Global** | No sends between 12AM-6AM | Applies to ALL contacts unless overridden |
+| **Global** | All outbound must pass vet | Universal, no override allowed |
+| **Group: Family** | No time restrictions | Overrides global midnight rule for family |
+| **Group: Work** | Professional tone, biz hours only | Work contacts get stricter tone rules |
+| **Group: Friends** | Relaxed language, warn only | Friends get looser profanity rules |
+| **Individual** | Don't text X until after school (3:30 PM) | Overrides group time rules for this contact |
+| **Individual** | Don't text X if he's driving/flying/working out | State-aware hold; send after activity ends |
+| **Individual** | Ex: HARD BLOCK, both directions | Overrides everything |
+| **Individual** | Boss: no texts after 6PM, hold for next morning | Time-aware queue per individual |
 
 ### 12.1 Policy Profile Structure
 
@@ -496,21 +547,30 @@ PolicyProfile:
 
 ```
 RuleMatrixEntry:
+  scope: GLOBAL | GROUP | INDIVIDUAL
+  scopeTarget: null (global) | GroupRef (group) | ContactRef (individual)
   conditions:
     accounts: AccountRef[] | ALL
-    channels: ChannelType[] | ALL
+    channels: ChannelModuleId[] | ALL (any channel module: sms, email, teams, slack, etc.)
     targets: GroupRef[] | ContactRef[] | ALL
-    timeWindows: TimeWindow[] | ALL
-    locations: GeoFence[] | ALL (opt-in)
-    userStates: StateToggle[] | ALL (drunk, angry, quiet, court, etc.)
+    timeWindows: TimeWindow[] | ALL (biz hours, school hours, bedtime, custom)
+    senderGeoFences: GeoFence[] | ALL
+      // e.g., "when I leave work," "when I arrive home"
+    recipientGeoFences: GeoFence[] | ALL (requires consent/shared location)
+      // e.g., "when they arrive at airport"
+    senderStates: StateToggle[] | ALL (drunk, angry, quiet, court, driving, workout, etc.)
+    recipientStates: StateToggle[] | ALL (driving, flying, working out, in meeting, DND, sleeping)
+    combinationLogic: AND | OR (for multi-condition triggers)
     direction: INBOUND | OUTBOUND | BOTH
   action:
-    type: ALLOW | WARN | BLOCK | REQUIRE_APPROVAL | REQUIRE_QUORUM | SCHEDULE_ONLY | REWRITE_REQUIRED
+    type: ALLOW | WARN | BLOCK | REQUIRE_APPROVAL | REQUIRE_QUORUM | SCHEDULE_ONLY | REWRITE_REQUIRED | HOLD_UNTIL_STATE_CHANGE | HOLD_UNTIL_GEOFENCE
     params:
       cooldownSeconds: number | null
+      holdUntil: StateTrigger | GeoTrigger | TimeTrigger | CombinationTrigger | null
       approverRoles: string[] | null
       quorumConfig: { required: number, pool: UserRef[] } | null
       rewriteMode: MINIMAL | PROFESSIONAL | EMPATHETIC | SHORT | SAFE | null
+      autoMessage: { template: string, triggerOn: GeoEvent | StateEvent } | null
   priority: number
   enabled: boolean
 ```
@@ -656,43 +716,126 @@ ApprovalWorkflow:
 
 ---
 
-## 16. Messaging Architecture
+## 16. Messaging Architecture — Channel Module System
 
-### 16.1 External Adapters
+> **Core design principle:** Every inbound and outbound channel is a **pluggable module** with a standard adapter interface. Adding a new channel (Teams, Slack, Signal, etc.) means implementing the adapter contract — the vet pipeline, policy engine, quarantine, and audit layer are channel-agnostic and apply uniformly.
 
-| Channel | Integration Method | Limitations |
-|---------|-------------------|-------------|
-| **Email** | IMAP/SMTP + OAuth (Gmail, Outlook) | Full send/receive |
-| **SMS (Android)** | Default SMS handler registration | Requires user to set MsgVet as default SMS app |
-| **SMS (iOS)** | Compose-through + share sheet | Cannot intercept; compose-only |
-| **X (Twitter)** | API v2 | Rate limits, API access tiers |
-| **Meta (Instagram, FB)** | Graph API | Business accounts only |
-| **WhatsApp** | Business API | Business accounts only |
+### 16.1 Channel Module Interface
 
-### 16.2 First-Party MsgVet Chat + Voice
+Every channel module implements:
 
-> **Recommended core.** Consistent enforcement, lower dependency, better kid safety, cheaper.
+```
+ChannelModule:
+  id: string (e.g., "teams", "sms", "email", "msgvet-chat")
+  name: string (human-readable)
+  type: FIRST_PARTY | EXTERNAL_FULL | EXTERNAL_COMPOSE_ONLY
+  capabilities:
+    canReceive: boolean
+    canSend: boolean
+    canIntercept: boolean
+    supportsReadReceipts: boolean
+    supportsTypingIndicators: boolean
+    supportsAttachments: boolean
+    supportsVoice: boolean
+    supportsPresence: boolean
+    supportsRecall: boolean (undo-send)
+  auth:
+    method: OAUTH | API_KEY | WEBHOOK | NATIVE
+    scopes: string[]
+  rateLimits: { perMinute: number, perDay: number } | null
+  costModel: ZERO | PER_MESSAGE | PER_MINUTE | PASS_THROUGH
+  status: AVAILABLE | BETA | PLANNED
+```
+
+### 16.2 Channel Module Registry
+
+| Module | Type | Capabilities | Status |
+|--------|------|-------------|--------|
+| **MsgVet Chat** | FIRST_PARTY | Full: send, receive, intercept, presence, recall | MVP |
+| **MsgVet Voice** | FIRST_PARTY | VoIP calling, presence | MVP |
+| **Email** | EXTERNAL_FULL | IMAP/SMTP + OAuth (Gmail, Outlook); full send/receive | MVP |
+| **SMS (Android)** | EXTERNAL_FULL | Default SMS handler; full send/receive | MVP |
+| **SMS (iOS)** | EXTERNAL_COMPOSE_ONLY | Compose-through + share sheet; cannot intercept | MVP |
+| **Microsoft Teams** | EXTERNAL_FULL | Graph API + Bot Framework; chat, channels, presence | Planned |
+| **Slack** | EXTERNAL_FULL | Slack API + Events API; DMs, channels | Planned |
+| **X (Twitter)** | EXTERNAL_FULL | API v2; DMs, posts | Planned |
+| **Meta (Instagram, FB)** | EXTERNAL_FULL | Graph API; business accounts only | Planned |
+| **WhatsApp** | EXTERNAL_FULL | Business API; business accounts | Planned |
+| **Signal** | EXTERNAL_FULL | Signal CLI/API bridge | Planned |
+| **Discord** | EXTERNAL_FULL | Bot API; DMs, channels | Planned |
+| **LinkedIn** | EXTERNAL_COMPOSE_ONLY | Messaging API (limited) | Planned |
+| **PSTN Voice** | EXTERNAL_FULL | ACS PSTN bridge; phone calls | Phase 2 |
+
+### 16.3 Microsoft Teams Module (Planned)
+
+```
+TeamsChannelModule:
+  integration: Microsoft Graph API + Bot Framework
+  auth: Azure AD / Entra ID OAuth (delegated + app permissions)
+  capabilities:
+    - Read/send 1:1 chats
+    - Read/send channel messages (where bot is added)
+    - Presence status (available/busy/DND/away/offline)
+    - Read receipts
+    - File attachments (via SharePoint/OneDrive)
+    - Reactions
+    - Teams meeting detection (user in meeting = state signal)
+  vetPipeline: Same as all channels — vet engine is channel-agnostic
+  policyBindings: Global rules + group rules + individual contact rules all apply
+  corporateUse:
+    - Delegation: drafters can compose Teams messages on exec's behalf
+    - Approvals: outbound Teams messages can require quorum
+    - Audit: all Teams message events logged to MsgVet audit trail
+  constraints:
+    - Requires Microsoft 365 tenant admin consent for org-wide
+    - Personal accounts: user-level consent only
+    - Rate limits per Graph API throttling guidance
+```
+
+### 16.4 How Channel Modules Interact with the Platform
+
+```
+Any Channel Module (inbound or outbound)
+  │
+  ├─ Inbound: Channel Adapter receives message
+  │   └─ Normalizes to MsgVet MessageEnvelope
+  │       └─ Enters standard vet pipeline (Section 14)
+  │           └─ Policy engine evaluates (global → group → individual rules)
+  │               └─ Decision: allow / quarantine / block
+  │
+  ├─ Outbound: User composes in MsgVet
+  │   └─ Vet pipeline runs (same as above)
+  │       └─ If approved: Channel Adapter sends via module's native API
+  │           └─ Delivery verification via module's receipt/poll mechanism
+  │
+  └─ All modules share: quarantine, approvals, audit, billing metering
+```
+
+### 16.5 First-Party MsgVet Chat + Voice
+
+> **Recommended core.** Consistent enforcement, lower dependency, better kid safety, cheapest per-message cost. Built on Azure Communication Services.
 
 | Feature | MVP | Phase 2 |
 |---------|-----|---------|
-| 1:1 chat | Yes | — |
-| Group chat | Yes | — |
-| Read receipts (configurable) | Yes | — |
-| Typing indicators | Yes | — |
-| File attachments | — | Yes |
-| Voice (VoIP) | Yes | — |
-| Voice (PSTN bridge) | — | Yes |
-| Video calling | — | Phase 3 |
-| Message reactions | Yes | — |
-| Message editing (within window) | Yes | — |
+| 1:1 chat | Yes | -- |
+| Group chat | Yes | -- |
+| Read receipts (configurable) | Yes | -- |
+| Typing indicators | Yes | -- |
+| File attachments | -- | Yes |
+| Voice (VoIP) | Yes | -- |
+| Voice (PSTN bridge) | -- | Yes |
+| Video calling | -- | Phase 3 |
+| Message reactions | Yes | -- |
+| Message editing (within window) | Yes | -- |
 
-### 16.3 Azure Communication Services (ACS)
+### 16.6 Adding a New Channel Module
 
-Primary candidate for first-party messaging infrastructure:
-- Chat SDK for real-time messaging
-- Calling SDK for VoIP
-- SMS capability for external bridge
-- Phone number provisioning for alias numbers
+To add a new channel (e.g., Telegram, WeChat):
+1. Implement `ChannelModule` adapter interface (auth, send, receive, normalize)
+2. Register in Channel Module Registry with capabilities declaration
+3. No changes needed to: vet engine, policy engine, quarantine, approvals, audit, billing
+4. Channel-specific config (API keys, OAuth) stored in Key Vault
+5. Channel appears in user's "Connected Accounts" settings
 
 ---
 
@@ -722,45 +865,78 @@ Primary candidate for first-party messaging infrastructure:
 
 ---
 
-## 18. Scheduling & Delivery Assurance
+## 18. Smart Scheduling & Delivery Assurance
 
-### 18.1 Scheduler Service Pipeline
+> **Context-aware delivery.** Messages aren't just scheduled by time — they fire based on state, geofence, activity, or combinations. "Send after he lands AND it's after 9AM." "Text when I leave work." "Send 'I'm here' when I arrive."
+
+### 18.1 Smart Schedule Triggers
+
+| Trigger | Source | Examples |
+|---------|--------|----------|
+| **Time** | Clock | After 3:30 PM, after biz hours, next Monday 9 AM |
+| **Geofence: sender** | Phone/Watch GPS | "When I leave work," "when I arrive home," "when I leave the gym" |
+| **Geofence: recipient** | Shared location / presence API | "When they arrive at airport" (requires consent) |
+| **Sender state** | Phone/Watch sensors | Workout ends, driving stops, DND off, wakes up |
+| **Recipient state** | Presence/calendar APIs | Meeting ends, flight lands, workout done, available again |
+| **Combination (AND)** | Multiple triggers | "After he lands AND it's after 9 AM," "after school AND not driving" |
+| **Auto-message** | Geofence + template | "I'm here" on arrival, "just leaving now" on departure |
+
+### 18.2 Auto-Message Templates
+
+| Trigger | Auto-Message | Audience |
+|---------|-------------|----------|
+| Leave work geofence | "Just leaving work now" | Configurable: spouse, family group |
+| Arrive home geofence | "I'm home" | Configurable |
+| Arrive at destination | "I'm here" | Person you're meeting |
+| Route started (nav active) | "On my way, ETA [X] min" | Configurable |
+| Flight landed (state change) | "Just landed" | Configurable |
+| Workout ended | "Done at the gym" | Configurable |
+
+All auto-messages pass through the vet pipeline before send.
+
+### 18.3 Smart Schedule Data Model
 
 ```
-Schedule Request
-  │
-  ├─ 1. Validate: auth, policy snapshot, idempotency key
-  ├─ 2. Preflight vet (policy version pinned at schedule time)
-  ├─ 3. Enqueue send job (Service Bus queue)
-  ├─ 4. At scheduled time:
-  │   ├─ Re-vet (if policy changed since schedule)
-  │   ├─ Provider send call (channel adapter)
-  │   └─ Capture provider messageId / postId
-  ├─ 5. Verification job:
-  │   ├─ Check delivery receipt (where available)
-  │   ├─ Poll status (for APIs without webhooks)
-  │   └─ Retry with exponential backoff (max 3 attempts)
-  └─ 6. Final status:
-      ├─ DELIVERED (confirmed)
-      ├─ SENT (no receipt available)
-      ├─ FAILED (dead-letter after max retries)
-      └─ EXPIRED (past delivery window)
+SmartSchedule:
+  id: uuid
+  messageId: uuid
+  triggers:
+    - type: TIME | SENDER_GEOFENCE | RECIPIENT_GEOFENCE | SENDER_STATE | RECIPIENT_STATE
+      config:
+        // TIME: { at: ISO8601, timezone: string }
+        // GEOFENCE: { fenceId: uuid, event: ENTER | EXIT, location: { lat, lng, radius } }
+        // STATE: { state: DRIVING | FLYING | WORKOUT | MEETING | DND | SLEEPING, event: STARTED | ENDED }
+  triggerLogic: AND | OR (how multiple triggers combine)
+  autoMessageTemplate: string | null
+  policySnapshot: PolicyVersion
+  idempotencyKey: string
+  status: ARMED | TRIGGERED | SENDING | DELIVERED | SENT | FAILED | EXPIRED | CANCELLED
+  armedAt: ISO 8601
+  firedAt: ISO 8601 | null
+  deliveredAt: ISO 8601 | null
 ```
 
-### 18.2 Idempotency
-- Every scheduled send has a unique idempotency key.
-- Duplicate submissions return existing job status.
-- Provider-level dedup where supported.
+### 18.4 Delivery Pipeline
 
-### 18.3 Azure Building Blocks
+1. **Validate:** auth, policy snapshot, idempotency key
+2. **Arm triggers:** register geofence/state/time listeners
+3. **Trigger fires:** evaluate all conditions (AND/OR logic)
+4. **Re-vet:** if policy changed since arming
+5. **Send:** via channel module adapter
+6. **Verify:** delivery receipt / poll / retry (3x backoff)
+7. **Final:** DELIVERED / SENT / FAILED (dead-letter) / EXPIRED
+
+### 18.5 Azure Building Blocks
 
 | Component | Purpose |
 |-----------|---------|
 | **Azure Service Bus** | Job queues + dead-letter queues |
-| **Durable Functions** | Orchestration with retry policies |
+| **Durable Functions** | Orchestration with retry policies, trigger monitoring |
 | **Cosmos DB** | Job state storage (partition by tenant) |
 | **Key Vault** | Provider credentials + encryption keys |
 | **App Insights + Log Analytics** | Observability, correlation IDs |
+| **Azure Maps / Geofencing** | Geofence trigger evaluation |
+| **Azure Notification Hubs** | Watch + phone push for trigger confirmations |
 
 ---
 
