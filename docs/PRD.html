@@ -885,14 +885,66 @@ flowchart LR
 </table></div>
 
 <!-- ===== 17. BILLING ===== -->
-<h2 id="billing">17. Billing</h2>
+<h2 id="billing">17. Billing &mdash; Prepaid + Subscription</h2>
+
+<div class="callout vision">
+<strong>Pay in advance, never overspend.</strong> Monthly subscription sets plan tier + included usage. Anything beyond draws from a prepaid wallet. Balance must stay above a configurable padding for LLM features to work. No surprise invoices.
+</div>
+
+<h3>Plans</h3>
 <div class="table-wrap"><table>
-<tr><th>Plan</th><th>Target</th><th>Included</th><th>Price</th></tr>
-<tr><td>Family Free</td><td>Trial</td><td>100 vets/mo, 1 kid, chat only</td><td>$0</td></tr>
-<tr><td>Family Safe</td><td>Families</td><td>2K vets/mo, 5 accounts, SMS</td><td>$9.99/mo</td></tr>
-<tr><td>Adult Guard</td><td>Individuals</td><td>1K vets/mo, all packs</td><td>$4.99/mo</td></tr>
-<tr><td>Corporate</td><td>Orgs</td><td>Custom, delegation, audit</td><td>$29.99/seat/mo</td></tr>
-<tr><td>Enterprise</td><td>Large</td><td>Unlimited, SSO, custom</td><td>Custom</td></tr>
+<tr><th>Plan</th><th>Target</th><th>Included</th><th>Sub</th><th>Min Padding</th></tr>
+<tr><td>Family Free</td><td>Trial</td><td>100 vets/mo, 1 kid, chat</td><td>$0</td><td>$0 (hard cap)</td></tr>
+<tr><td>Family Safe</td><td>Families</td><td>2K vets/mo, 5 accts, SMS</td><td>$9.99/mo</td><td>$5.00</td></tr>
+<tr><td>Adult Guard</td><td>Individuals</td><td>1K vets/mo, all packs</td><td>$4.99/mo</td><td>$3.00</td></tr>
+<tr><td>Corporate</td><td>Orgs</td><td>Custom, delegation, audit</td><td>$29.99/seat</td><td>$25.00</td></tr>
+<tr><td>Enterprise</td><td>Large</td><td>Unlimited, SSO, custom</td><td>Custom</td><td>Custom</td></tr>
+</table></div>
+
+<h3>Balance States &amp; Graceful Degradation</h3>
+<div class="table-wrap"><table>
+<tr><th>State</th><th>Condition</th><th>Effect</th></tr>
+<tr><td><span class="tag tag-green">Green</span></td><td>balance &ge; padding</td><td>Full functionality. All LLM features active.</td></tr>
+<tr><td><span class="tag tag-warn">Yellow</span></td><td>balance &lt; padding &times; 2</td><td>Warning: push + email + Watch. "Balance low &mdash; top up."</td></tr>
+<tr><td><span class="tag" style="border-color:#f97316;color:#f97316;background:#f9731622">Orange</span></td><td>balance &lt; padding, &gt; 0</td><td><strong>LLM frozen.</strong> Deterministic rules still run. Can view messages. Can't use AI vet/rewrite. Sends needing LLM held.</td></tr>
+<tr><td><span class="tag tag-red">Red</span></td><td>balance &le; 0</td><td>LLM frozen + external sends blocked. First-party chat still works. Auto top-up triggered.</td></tr>
+</table></div>
+
+<h3>What Still Works at Zero Balance</h3>
+<div class="table-wrap"><table>
+<tr><th>Feature</th><th>Green</th><th>Orange</th><th>Red</th></tr>
+<tr><td>View messages on device</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>First-party chat</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Deterministic rules</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>LLM classification</td><td>Yes</td><td><strong>No</strong></td><td><strong>No</strong></td></tr>
+<tr><td>AI rewrites</td><td>Yes</td><td><strong>No</strong></td><td><strong>No</strong></td></tr>
+<tr><td>External sends (SMS/email)</td><td>Yes</td><td>Yes</td><td><strong>No</strong></td></tr>
+<tr><td>Smart schedule triggers</td><td>Yes</td><td>Yes</td><td>Yes (sends may hold)</td></tr>
+<tr><td>Quarantine &amp; approvals</td><td>Yes</td><td>Yes (manual)</td><td>Yes (manual)</td></tr>
+</table></div>
+
+<h3>Auto Top-Up</h3>
+<div class="table-wrap"><table>
+<tr><th>Feature</th><th>Description</th></tr>
+<tr><td>Threshold trigger</td><td>Auto-charge when balance drops below configurable threshold</td></tr>
+<tr><td>Payment methods</td><td>Credit/debit, Apple Pay, Google Pay (via Stripe/Adyen)</td></tr>
+<tr><td>Failure handling</td><td>Retry 3x over 24h. If all fail, urgent notification. Account stays Orange/Red.</td></tr>
+<tr><td>Spending limits</td><td>Daily/weekly/monthly caps to prevent runaway charges</td></tr>
+<tr><td>Family controls</td><td>Parent sets kid spending limits. Kids can't modify wallet.</td></tr>
+</table></div>
+
+<h3>Graceful Degradation UX</h3>
+<p>When LLM frozen: compose screen shows banner "AI vetting paused &mdash; [Top Up]". Outbound still enforced by deterministic rules but tagged "Not AI-vetted". Kid inbound: deterministic filters active, parent notified "AI screening paused due to balance." Watch complication shows warning badge.</p>
+
+<h3>Dashboard</h3>
+<div class="table-wrap"><table>
+<tr><th>Element</th><th>Description</th></tr>
+<tr><td>Balance</td><td>Current amount + color state indicator</td></tr>
+<tr><td>Burn rate</td><td>Daily spend + projection: "Balance lasts ~12 days"</td></tr>
+<tr><td>Usage breakdown</td><td>Vet actions, external sends, voice, storage</td></tr>
+<tr><td>Plan progress</td><td>1,234 / 2,000 included vets used this month</td></tr>
+<tr><td>Transaction history</td><td>Immutable ledger, filterable by type/date</td></tr>
+<tr><td>Alerts</td><td>Notify at 50%, 25%, 10% of padding remaining</td></tr>
 </table></div>
 
 <!-- ===== 18. LLM ===== -->

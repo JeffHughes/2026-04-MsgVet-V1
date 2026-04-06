@@ -1192,21 +1192,124 @@ Response:
 | **Storage** | Attachments, logs beyond free tier | Per GB/month |
 | **Alias number** | Provisioned phone number | Per number/month |
 
-### 21.2 Plans
+### 21.2 Plans (Subscription + Prepaid Balance)
 
-| Plan | Target | Included | Price Range |
-|------|--------|----------|-------------|
-| **Family Free** | Trial families | 100 vet actions/mo, 1 kid account, MsgVet Chat only | $0 |
-| **Family Safe** | Active families | 2,000 vet actions/mo, 5 accounts, basic SMS | $9.99/mo |
-| **Adult Guard** | Individual adults | 1,000 vet actions/mo, all policy packs, scheduled sends | $4.99/mo |
-| **Corporate** | Organizations | Custom vet volume, delegation, audit, SLA | $29.99/seat/mo |
-| **Enterprise** | Large orgs | Unlimited, SSO, custom policies, dedicated support | Custom |
+> **Billing model:** Monthly subscription sets the plan tier and included usage. All usage beyond included allowance draws from a **prepaid balance**. Balance must be positive (with configurable padding) for LLM features to function. Users pay in advance — no post-usage billing, no surprise invoices.
 
-### 21.3 Controls
-- Wallet/credits system with budgets per family/org.
-- Hard caps + configurable warnings (50%, 80%, 95% usage).
-- Invoice-grade immutable ledger (audit requirement).
-- Real-time usage dashboard.
+| Plan | Target | Included | Subscription | Min Balance Padding |
+|------|--------|----------|-------------|---------------------|
+| **Family Free** | Trial families | 100 vet actions/mo, 1 kid, chat only | $0 | $0 (hard cap at 100) |
+| **Family Safe** | Active families | 2,000 vet actions/mo, 5 accounts, SMS | $9.99/mo | $5.00 |
+| **Adult Guard** | Individual adults | 1,000 vet actions/mo, all packs, scheduling | $4.99/mo | $3.00 |
+| **Corporate** | Organizations | Custom volume, delegation, audit, SLA | $29.99/seat/mo | $25.00 |
+| **Enterprise** | Large orgs | Unlimited, SSO, custom policies | Custom | Custom |
+
+### 21.3 Prepaid Wallet & Balance Enforcement
+
+#### Wallet Model
+
+```
+Wallet:
+  tenantId: uuid
+  balance: decimal (current prepaid balance in USD)
+  paddingRequired: decimal (minimum balance to keep LLM active, per plan)
+  autoTopUp:
+    enabled: boolean
+    threshold: decimal (top up when balance drops below this)
+    amount: decimal (amount to add per top-up)
+    paymentMethod: PaymentMethodRef
+  ledger: WalletTransaction[] (append-only, immutable)
+  lastTopUpAt: ISO 8601
+  frozenAt: ISO 8601 | null (when balance went below padding)
+```
+
+#### Balance States
+
+| State | Condition | Effect |
+|-------|-----------|--------|
+| **Green** | `balance >= paddingRequired` | Full functionality. All LLM features active. |
+| **Yellow** (warning) | `balance < paddingRequired * 2` but `>= paddingRequired` | Warning notifications: push + email + Watch. "Balance low — top up to avoid service interruption." |
+| **Orange** (critical) | `balance < paddingRequired` but `> 0` | **LLM features frozen.** Deterministic rules still run. User can read/view all messages on device. Cannot use AI vetting, rewrites, or classification. Sends that require LLM are held. |
+| **Red** (depleted) | `balance <= 0` | Same as Orange + external sends (SMS/email) blocked (cost-incurring). First-party chat still works (near-zero cost). Auto top-up triggered if enabled. |
+
+#### What Still Works at Zero Balance
+
+| Feature | Green | Yellow | Orange | Red |
+|---------|-------|--------|--------|-----|
+| View messages on device | Yes | Yes | Yes | Yes |
+| First-party chat (send/receive) | Yes | Yes | Yes | Yes |
+| Deterministic rules (allow/deny lists, time windows) | Yes | Yes | Yes | Yes |
+| LLM classification (inbound) | Yes | Yes | **No** | **No** |
+| LLM rewrite suggestions | Yes | Yes | **No** | **No** |
+| AI-powered vet reports | Yes | Yes | **No** | **No** |
+| External sends (SMS/email) | Yes | Yes | Yes | **No** |
+| Smart schedule triggers | Yes | Yes | Yes | Yes (but sends may be held) |
+| Quarantine (existing) | Yes | Yes | Yes | Yes |
+| Approval workflows | Yes | Yes | Yes (manual only) | Yes (manual only) |
+
+#### Graceful Degradation UX
+
+When LLM is frozen due to balance:
+- **Compose screen:** Banner: "AI vetting paused — balance below minimum. [Top Up]" with direct link to wallet.
+- **Outbound messages:** Deterministic rules still enforce (block profanity regex, time windows, deny lists). LLM classification skipped — message sends with a "Not AI-vetted" tag visible to sender.
+- **Inbound (kid accounts):** Deterministic filters still catch known threats. LLM classification disabled — unknown content passes with "Unvetted" flag + parent notification: "AI vetting paused due to balance. Some messages may not be fully screened."
+- **Watch:** Complication shows warning badge. Tap → "Top up balance."
+
+#### Auto Top-Up
+
+| Feature | Description |
+|---------|-------------|
+| **Threshold trigger** | When balance drops below configurable threshold, auto-charge configured amount. |
+| **Payment methods** | Credit card, debit card, Apple Pay, Google Pay. Stored via payment processor (Stripe/Adyen). |
+| **Failure handling** | If auto top-up fails: retry 3x over 24h. If all fail, send urgent notification. Account stays in Orange/Red. |
+| **Spending limits** | Configurable daily/weekly/monthly auto top-up caps to prevent runaway charges. |
+| **Family controls** | Parent sets kid account spending limits. Kids cannot modify wallet or top-up settings. |
+
+### 21.4 Transaction Ledger
+
+Every balance change is recorded in an **immutable, append-only ledger**:
+
+```
+WalletTransaction:
+  id: uuid
+  tenantId: uuid
+  type: SUBSCRIPTION | TOP_UP | AUTO_TOP_UP | USAGE_DEBIT | REFUND | CREDIT | ADJUSTMENT
+  amount: decimal (positive = credit, negative = debit)
+  balanceAfter: decimal
+  description: string
+  relatedEntityId: uuid | null (e.g., messageId for usage debit, invoiceId for subscription)
+  paymentMethodRef: string | null
+  timestamp: ISO 8601
+  hash: string (ledger integrity, links to previous transaction)
+```
+
+### 21.5 Usage Metering Pipeline
+
+```
+Message sent or vetted
+  │
+  ├─ Metering service records usage event (unit type + quantity)
+  ├─ Check: within included plan allowance?
+  │   ├─ Yes → no wallet debit
+  │   └─ No → calculate cost, debit wallet
+  │       ├─ Balance still green → continue
+  │       ├─ Balance hits yellow → send warning
+  │       ├─ Balance hits orange → freeze LLM, notify user
+  │       └─ Balance hits red → freeze external sends, trigger auto top-up
+  └─ Write transaction to ledger (always, even if $0.00 — for audit)
+```
+
+### 21.6 Real-Time Dashboard
+
+| Element | Description |
+|---------|-------------|
+| **Balance display** | Current balance + color state (green/yellow/orange/red) |
+| **Burn rate** | Current daily/weekly spend rate with projection: "At this rate, balance lasts ~12 days" |
+| **Usage breakdown** | Pie chart: vet actions, external sends, voice, storage |
+| **Plan usage** | Progress bar: 1,234 / 2,000 included vet actions used this month |
+| **Transaction history** | Scrollable ledger with filters (type, date range) |
+| **Auto top-up status** | Current settings + next projected trigger |
+| **Alerts** | Configurable: notify at 50%, 25%, 10% of padding remaining |
 
 ---
 
