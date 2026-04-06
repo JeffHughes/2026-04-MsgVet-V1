@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MsgVet &mdash; Documentation</title>
+<style>
+:root{--bg:#0f1117;--surface:#181a20;--surface2:#23262f;--border:#2d3039;--text:#e4e4e7;--muted:#9ca3af;--accent:#58a6ff;--accent2:#3fb950;--red:#f85149;--warn:#eab308;--purple:#bc8cff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.container{max-width:960px;margin:0 auto;padding:24px}
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:10}
+nav .brand{font-weight:700;color:var(--accent);font-size:16px;margin-right:auto}
+nav a{color:var(--muted);font-size:13px}nav a:hover,nav a.active{color:var(--text);text-decoration:none}
+.hero{text-align:center;padding:48px 0 32px}
+.hero h1{font-size:36px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--muted);font-size:16px;margin-top:8px;max-width:640px;margin-left:auto;margin-right:auto}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:32px 0}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;transition:border-color .2s;display:block;color:var(--text)}
+.card:hover{border-color:var(--accent);text-decoration:none}
+.card h3{font-size:16px;margin-bottom:6px}.card p{font-size:13px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin:24px 0}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center}
+.stat .num{font-size:28px;font-weight:700;color:var(--accent)}.stat .label{font-size:12px;color:var(--muted)}
+h2{font-size:20px;margin:32px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px}
+code{background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:13px}
+pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;font-size:13px;margin:12px 0}
+.formula{background:linear-gradient(135deg,#1f6feb22,#3fb95011);border:2px solid var(--accent);border-radius:12px;padding:24px;text-align:center;margin:24px 0;font-size:18px;font-weight:600;color:var(--text)}
+.tier{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;margin-left:6px}
+.tier-kid{background:#3fb95022;color:var(--accent2);border:1px solid var(--accent2)}
+.tier-adult{background:#58a6ff22;color:var(--accent);border:1px solid var(--accent)}
+.tier-corp{background:#bc8cff22;color:var(--purple);border:1px solid var(--purple)}
+footer{text-align:center;padding:24px;color:var(--muted);font-size:12px;border-top:1px solid var(--border);margin-top:48px}
+</style>
+</head>
+<body>
+<nav>
+  <span class="brand">MsgVet</span>
+  <a href="index.html" class="active">Home</a>
+  <a href="PRD.html">PRD</a>
+  <a href="architecture.html">Architecture</a>
+</nav>
+
+<div class="container">
+  <div class="hero">
+    <h1>MsgVet</h1>
+    <p>Policy-enforced messaging platform &mdash; kid safety, adult guardrails, and corporate governance in one codebase.</p>
+    <div style="margin-top:12px">
+      <span class="badge">MVP v1.0</span>
+      <span class="badge">Azure-first</span>
+      <span class="badge">April 2026</span>
+    </div>
+  </div>
+
+  <div class="formula">
+    <span style="color:var(--accent)">Policy Engine</span> +
+    <span style="color:var(--accent2)">Vet AI</span> +
+    <span style="color:var(--warn)">Channel Adapters</span> +
+    <span style="color:var(--purple)">First-Party Messaging</span>
+    = <strong>MsgVet</strong>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="num">3</div><div class="label">Tiers (Kid/Adult/Corp)</div></div>
+    <div class="stat"><div class="num">12</div><div class="label">Microservices</div></div>
+    <div class="stat"><div class="num">11</div><div class="label">Policy Packs</div></div>
+    <div class="stat"><div class="num">4</div><div class="label">Milestones</div></div>
+    <div class="stat"><div class="num">24</div><div class="label">Weeks to MVP</div></div>
+    <div class="stat"><div class="num">2</div><div class="label">LLM Tiers</div></div>
+  </div>
+
+  <h2>Build Order</h2>
+  <div class="cards">
+    <div class="card" style="border-left:3px solid var(--accent2)">
+      <h3>Milestone A <span class="tier tier-kid">Kid-First</span></h3>
+      <p>Family accounts, inbound/outbound filtering, quarantine, parent dashboard, first-party chat MVP, COPPA compliance. <strong>Weeks 1&ndash;8.</strong></p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--accent)">
+      <h3>Milestone B <span class="tier tier-adult">Adult Guard</span></h3>
+      <p>Drunk/Ex Guard, regret controls, intent capture, scheduling, alias groups, VoIP, email adapter. <strong>Weeks 9&ndash;14.</strong></p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--purple)">
+      <h3>Milestone C <span class="tier tier-corp">Corporate</span></h3>
+      <p>Delegation, quorum approvals, audit exports, corporate policy templates, admin console. <strong>Weeks 15&ndash;20.</strong></p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--warn)">
+      <h3>Milestone D <span class="badge">Launch</span></h3>
+      <p>Load testing, security audit, COPPA review, cost optimization, app store submissions, beta. <strong>Weeks 21&ndash;24.</strong></p>
+    </div>
+  </div>
+
+  <h2>Documentation</h2>
+  <div class="cards">
+    <a href="PRD.html" class="card">
+      <h3>Product Requirements</h3>
+      <p>Full PRD: personas, user journeys, policy engine, quarantine, approvals, vetting, billing, LLM strategy, data model, security, and milestones.</p>
+    </a>
+    <a href="architecture.html" class="card">
+      <h3>Architecture</h3>
+      <p>System design, service responsibilities, Azure building blocks, data flow, messaging pipeline, and deployment topology.</p>
+    </a>
+  </div>
+
+  <h2>Technology Stack</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>Backend</h3>
+      <p>.NET 9 Minimal APIs, Azure Cosmos DB, Service Bus, Durable Functions, Key Vault, Azure OpenAI, ACS.</p>
+    </div>
+    <div class="card">
+      <h3>Mobile</h3>
+      <p>iOS: SwiftUI + Combine. Android: Jetpack Compose + Kotlin. Real-time via SignalR.</p>
+    </div>
+    <div class="card">
+      <h3>Web Console</h3>
+      <p>Angular 21 (InfiniteCabinet patterns). Parent console, corporate admin, support tools.</p>
+    </div>
+    <div class="card">
+      <h3>AI / Vetting</h3>
+      <p>Two-tier: GPT-4o-mini (cheap) + GPT-4o (strong). Deterministic rules first, LLM second. &lt;$0.15 per 1K messages.</p>
+    </div>
+  </div>
+
+  <h2>Key Metrics (Targets)</h2>
+  <div class="stats">
+    <div class="stat"><div class="num">&gt;95%</div><div class="label">Kid threats caught</div></div>
+    <div class="stat"><div class="num">&gt;75%</div><div class="label">Blocks confirmed good</div></div>
+    <div class="stat"><div class="num">&lt;5min</div><div class="label">AI approval p95</div></div>
+    <div class="stat"><div class="num">10K</div><div class="label">Families by M6</div></div>
+  </div>
+</div>
+
+<footer>MsgVet Documentation &mdash; v1.0.0 &mdash; April 6, 2026</footer>
+</body>
+</html>

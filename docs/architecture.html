@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MsgVet &mdash; Architecture</title>
+<style>
+  :root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#c9d1d9;--heading:#f0f6fc;--accent:#58a6ff;--accent2:#3fb950;--warn:#d29922;--red:#f85149;--purple:#bc8cff;--code-bg:#1c2128}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+  .container{max-width:1100px;margin:0 auto;padding:40px 32px}
+  nav{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:10}
+  nav .brand{font-weight:700;color:var(--accent);font-size:16px;margin-right:auto}
+  nav a{color:#8b949e;font-size:13px;text-decoration:none}nav a:hover,nav a.active{color:var(--text)}
+  h1{color:var(--heading);font-size:2em;margin-bottom:8px;border-bottom:2px solid var(--accent);padding-bottom:12px}
+  h2{color:var(--accent);font-size:1.5em;margin-top:48px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px}
+  h3{color:var(--heading);font-size:1.15em;margin-top:28px;margin-bottom:10px}
+  p{margin-bottom:14px}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+  ul,ol{margin-left:24px;margin-bottom:14px}li{margin-bottom:6px}
+  table{width:100%;border-collapse:collapse;margin-bottom:20px}
+  th,td{padding:10px 14px;border:1px solid var(--border);text-align:left;font-size:.9em}
+  th{background:var(--surface);color:var(--heading);font-weight:600}td{background:var(--bg)}
+  code{background:var(--code-bg);padding:2px 6px;border-radius:4px;font-size:.9em;color:var(--accent)}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;margin-bottom:16px;font-size:.85em;line-height:1.5;color:var(--text)}
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:20px;font-family:'Courier New',monospace;font-size:.8em;line-height:1.4;white-space:pre;overflow-x:auto;margin:16px 0}
+  .callout{background:var(--surface);border-left:4px solid var(--accent);padding:16px 20px;margin:20px 0;border-radius:0 8px 8px 0}
+  .callout.vision{border-left-color:var(--accent2)}
+  footer{text-align:center;padding:24px;color:#8b949e;font-size:12px;border-top:1px solid var(--border);margin-top:48px}
+</style>
+</head>
+<body>
+<nav>
+  <span class="brand">MsgVet</span>
+  <a href="index.html">Home</a>
+  <a href="PRD.html">PRD</a>
+  <a href="architecture.html" class="active">Architecture</a>
+</nav>
+
+<div class="container">
+
+<h1>System Architecture</h1>
+<p style="color:#8b949e;font-size:.85em">MsgVet v1.0.0 &bull; April 2026 &bull; Azure-first, microservices</p>
+
+<h2>1. High-Level Overview</h2>
+
+<div class="diagram">┌─────────────────────────────────────────────────────────────────┐
+│                         CLIENT LAYER                            │
+│   ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌───────────┐  │
+│   │  iOS App  │   │ Android  │   │   Web    │   │  Admin    │  │
+│   │ (SwiftUI) │   │(Compose) │   │ Console  │   │ Console   │  │
+│   └─────┬─────┘   └─────┬────┘   └─────┬────┘   └─────┬─────┘  │
+└─────────┼────────────────┼──────────────┼──────────────┼────────┘
+          └────────────────┴───────┬──────┴──────────────┘
+                                   │  HTTPS + WebSocket
+┌──────────────────────────────────┼──────────────────────────────┐
+│              API GATEWAY (Azure API Management)                 │
+│  JWT Auth │ API Keys │ Rate Limiting │ TLS 1.3 │ Request Route  │
+└──────────────────────────────────┼──────────────────────────────┘
+                                   │
+┌──────────────────────────────────┼──────────────────────────────┐
+│                        SERVICE LAYER                            │
+│                                                                 │
+│  ┌─────────────┐  ┌──────────────┐  ┌─────────────────┐       │
+│  │ Auth Service │  │ Messaging    │  │  Vet Engine     │       │
+│  │ • Login/MFA  │  │ • Chat/Voice │  │  • Classify     │       │
+│  │ • Device trust│  │ • Presence   │  │  • Score        │       │
+│  │ • Kid accounts│  │ • Delivery   │  │  • Rewrite      │       │
+│  └─────────────┘  └──────────────┘  │  • Model route   │       │
+│                                      └─────────────────┘       │
+│  ┌─────────────┐  ┌──────────────┐  ┌─────────────────┐       │
+│  │ Policy      │  │ Quarantine   │  │ Approval        │       │
+│  │ Engine      │  │ Service      │  │ Service         │       │
+│  │ • Rule eval │  │ • CRUD       │  │ • AI/Human/Mix  │       │
+│  │ • Conflict  │  │ • Review     │  │ • Quorum        │       │
+│  │ • Packs     │  │ • Expiry     │  │ • SLA/Escalate  │       │
+│  └─────────────┘  └──────────────┘  └─────────────────┘       │
+│                                                                 │
+│  ┌─────────────┐  ┌──────────────┐  ┌─────────────────┐       │
+│  │ Scheduler   │  │ Channel      │  │ Notification    │       │
+│  │ Service     │  │ Adapters     │  │ Service         │       │
+│  │ • Schedule  │  │ • Email      │  │ • Push          │       │
+│  │ • Verify    │  │ • SMS        │  │ • SMS alerts    │       │
+│  │ • Retry     │  │ • X/Meta     │  │ • Digests       │       │
+│  └─────────────┘  └──────────────┘  └─────────────────┘       │
+│                                                                 │
+│  ┌─────────────┐  ┌──────────────┐  ┌─────────────────┐       │
+│  │ Billing     │  │ Audit        │  │ Number          │       │
+│  │ Service     │  │ Service      │  │ Provisioner     │       │
+│  │ • Metering  │  │ • Events     │  │ • Alias phones  │       │
+│  │ • Invoicing │  │ • Hash chain │  │ • A2P compliance│       │
+│  │ • Budgets   │  │ • Export     │  │ • LCR routing   │       │
+│  └─────────────┘  └──────────────┘  └─────────────────┘       │
+└─────────────────────────────────────────────────────────────────┘
+                                   │
+┌──────────────────────────────────┼──────────────────────────────┐
+│                        DATA LAYER                               │
+│                                                                 │
+│  ┌──────────────┐  ┌──────────────┐  ┌─────────────────┐      │
+│  │ Cosmos DB    │  │ Service Bus  │  │ Blob Storage    │      │
+│  │ • Tenants    │  │ • Job queues │  │ • Attachments   │      │
+│  │ • Messages   │  │ • DLQ        │  │ • Audit archive │      │
+│  │ • Vet reports│  │ • Topics     │  │ • Exports       │      │
+│  │ • Audit log  │  │              │  │                 │      │
+│  └──────────────┘  └──────────────┘  └─────────────────┘      │
+│                                                                 │
+│  ┌──────────────┐  ┌──────────────┐  ┌─────────────────┐      │
+│  │ Redis Cache  │  │ Key Vault    │  │ Azure Comms Svc │      │
+│  │ • Sessions   │  │ • Secrets    │  │ • Chat SDK      │      │
+│  │ • Vet cache  │  │ • Encrypt    │  │ • Calling SDK   │      │
+│  │ • Rate limits│  │ • Provider   │  │ • SMS bridge    │      │
+│  └──────────────┘  └──────────────┘  └─────────────────┘      │
+│                                                                 │
+│  ┌──────────────┐  ┌──────────────┐                            │
+│  │ App Insights │  │ Azure OpenAI │                            │
+│  │ • Traces     │  │ • GPT-4o-mini│                            │
+│  │ • Metrics    │  │ • GPT-4o     │                            │
+│  │ • Correlation│  │              │                            │
+│  └──────────────┘  └──────────────┘                            │
+└─────────────────────────────────────────────────────────────────┘</div>
+
+<h2>2. Message Flow: Outbound Vetting Pipeline</h2>
+
+<div class="diagram">User Composes Message
+       │
+       ▼
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ Policy Engine │────▶│  Vet Engine  │────▶│   Decision   │
+│ • Load active │     │ • Deterministic│    │              │
+│   profiles    │     │   filters first│    │ PASS ──────────▶ Send via Channel Adapter
+│ • Evaluate    │     │ • LLM classify │    │              │
+│   rule matrix │     │   (cheap tier) │    │ WARN ──────────▶ Show warning + send option
+│ • Resolve     │     │ • Score + tag  │    │              │
+│   conflicts   │     │ • Escalate to  │    │ BLOCK ─────────▶ Quarantine Service
+│               │     │   strong model │    │              │
+│               │     │   if needed    │    │ APPROVE ─────▶ Approval Service
+└──────────────┘     └──────────────┘     └──────────────┘
+                                                  │
+                                           ┌──────▼──────┐
+                                           │ Audit Service│
+                                           │ • Log event  │
+                                           │ • Hash chain │
+                                           └─────────────┘</div>
+
+<h2>3. Message Flow: Kid Inbound Pipeline</h2>
+
+<div class="diagram">External Message Arrives (or MsgVet Chat)
+       │
+       ▼
+┌──────────────────┐
+│ Is recipient a   │──── No ──▶ Standard adult/corp pipeline
+│ kid account?     │
+└───────┬──────────┘
+        │ Yes
+        ▼
+┌──────────────────┐
+│ Deterministic     │
+│ Filters           │
+│ • Allow list?  ───────── Yes ──▶ ALLOW (deliver)
+│ • Deny list?   ───────── Yes ──▶ HARD BLOCK + quarantine
+│ • Time window? ───────── Fail ─▶ QUARANTINE
+│ • Unknown sender? ────── Yes ──▶ QUARANTINE or escalate
+└───────┬──────────┘
+        │ (not resolved)
+        ▼
+┌──────────────────┐
+│ LLM Classification│
+│ (cheap model)     │
+│ • Categories      │
+│ • Severity        │──── Confidence &lt; 0.8 ──▶ Escalate to strong model
+│ • Confidence      │
+└───────┬──────────┘
+        ▼
+┌──────────────────┐
+│ Decision          │
+│ • ALLOW           │──▶ Deliver to kid
+│ • ALLOW + FLAG    │──▶ Deliver + log for parent
+│ • QUARANTINE      │──▶ Parent notification (severity-based)
+│ • HARD BLOCK      │──▶ Quarantine metadata only
+└──────────────────┘
+        │
+        ▼
+┌──────────────────┐
+│ Crisis Check      │
+│ • Self-harm?      │──▶ CRITICAL parent alert + crisis resources
+│ • Threat?         │──▶ CRITICAL parent alert
+└──────────────────┘</div>
+
+<h2>4. Approval Workflow</h2>
+
+<div class="diagram">Message requires approval (policy decision)
+       │
+       ▼
+┌──────────────────┐
+│ Approval Service  │
+│ • Create workflow │
+│ • Set mode + SLA  │
+└───────┬──────────┘
+        │
+        ├──── AI_ONLY ──▶ Vet score passes? ──▶ Auto-approve ──▶ Send
+        │                                  └──▶ Auto-reject ──▶ Quarantine
+        │
+        ├──── HUMAN_ALWAYS ──▶ Notify approver(s)
+        │                          │
+        │                     ┌────▼────┐
+        │                     │ Approve  │──▶ Send
+        │                     │ Reject   │──▶ Quarantine + note
+        │                     │ Timeout  │──▶ Escalation chain
+        │                     └─────────┘
+        │
+        ├──── MIXED ──▶ AI must pass + human approves on trigger
+        │
+        └──── QUORUM ──▶ M-of-N must approve
+                              │
+                         Track approvals
+                              │
+                         M reached? ──▶ Send
+                         SLA breach? ──▶ Escalate
+                         N rejected? ──▶ Quarantine</div>
+
+<h2>5. Service Responsibilities</h2>
+
+<table>
+<tr><th>Service</th><th>Responsibility</th><th>Data Store</th></tr>
+<tr><td><strong>Auth</strong></td><td>Login, MFA, device trust, session, kid account creation, COPPA consent</td><td>Cosmos DB + Redis</td></tr>
+<tr><td><strong>Messaging</strong></td><td>First-party chat/voice, routing, delivery, presence, typing indicators</td><td>ACS + Cosmos DB</td></tr>
+<tr><td><strong>Vet Engine</strong></td><td>Classification, scoring, rewrite generation, model routing (cheap/strong)</td><td>Azure OpenAI + Redis cache</td></tr>
+<tr><td><strong>Policy Engine</strong></td><td>Rule matrix evaluation, conflict resolution, policy pack management</td><td>Cosmos DB</td></tr>
+<tr><td><strong>Quarantine</strong></td><td>Quarantine CRUD, review workflows, expiry, batch actions</td><td>Cosmos DB</td></tr>
+<tr><td><strong>Approval</strong></td><td>Workflows, quorum tracking, SLA enforcement, escalation chains</td><td>Cosmos DB + Service Bus</td></tr>
+<tr><td><strong>Scheduler</strong></td><td>Scheduled sends, idempotency, delivery verification, retry</td><td>Service Bus + Durable Functions</td></tr>
+<tr><td><strong>Channel Adapters</strong></td><td>External integration (email, SMS, social), protocol translation</td><td>Key Vault (creds)</td></tr>
+<tr><td><strong>Billing</strong></td><td>Usage metering, invoicing, budget enforcement, payments</td><td>Cosmos DB</td></tr>
+<tr><td><strong>Audit</strong></td><td>Event ingestion, immutable log, hash chain, export, retention</td><td>Cosmos DB + Blob Storage</td></tr>
+<tr><td><strong>Notification</strong></td><td>Push notifications, SMS alerts, email digests, webhooks</td><td>Service Bus + ACS</td></tr>
+<tr><td><strong>Number Provisioner</strong></td><td>Alias phone number lifecycle, A2P compliance, LCR routing</td><td>ACS + Cosmos DB</td></tr>
+</table>
+
+<h2>6. Data Partitioning Strategy</h2>
+
+<div class="callout vision">
+<strong>Core principle:</strong> Every query is scoped by <code>tenantId</code>. No cross-tenant data access. Cosmos DB partition key = <code>tenantId</code> for all containers.
+</div>
+
+<table>
+<tr><th>Container</th><th>Partition Key</th><th>Key Entities</th></tr>
+<tr><td>tenants</td><td><code>id</code></td><td>Tenant settings, plan, billing</td></tr>
+<tr><td>users</td><td><code>tenantId</code></td><td>Users, roles, device trust, accounts</td></tr>
+<tr><td>messages</td><td><code>tenantId</code></td><td>Messages, conversations</td></tr>
+<tr><td>vet-reports</td><td><code>tenantId</code></td><td>Vet reports, rewrite suggestions</td></tr>
+<tr><td>quarantine</td><td><code>tenantId</code></td><td>Quarantine records, review actions</td></tr>
+<tr><td>approvals</td><td><code>tenantId</code></td><td>Approval workflows, actions</td></tr>
+<tr><td>policies</td><td><code>tenantId</code></td><td>Policy profiles, rule matrix entries</td></tr>
+<tr><td>audit</td><td><code>tenantId</code></td><td>Audit events (append-only, hash chain)</td></tr>
+<tr><td>billing</td><td><code>tenantId</code></td><td>Usage records, invoices, budgets</td></tr>
+</table>
+
+<h2>7. Deployment Topology</h2>
+
+<div class="diagram">┌─────────────────────────────────────────────┐
+│              Azure Front Door               │
+│  CDN + WAF + Global Load Balancing          │
+└──────────────────┬──────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────┐
+│         Azure Container Apps                 │
+│  ┌─────────┐ ┌─────────┐ ┌──────────────┐  │
+│  │ Auth    │ │Messaging│ │ Vet Engine   │  │
+│  │ (2 rep) │ │(3 rep)  │ │ (auto-scale) │  │
+│  └─────────┘ └─────────┘ └──────────────┘  │
+│  ┌─────────┐ ┌─────────┐ ┌──────────────┐  │
+│  │ Policy  │ │Quarant. │ │ Approval     │  │
+│  │ (2 rep) │ │(2 rep)  │ │ (2 rep)      │  │
+│  └─────────┘ └─────────┘ └──────────────┘  │
+│  ┌─────────┐ ┌─────────┐ ┌──────────────┐  │
+│  │Schedule │ │Billing  │ │ Audit        │  │
+│  │(2 rep)  │ │(2 rep)  │ │ (2 rep)      │  │
+│  └─────────┘ └─────────┘ └──────────────┘  │
+│  ┌─────────┐ ┌─────────┐                    │
+│  │Channels │ │Notif.   │  Managed scaling   │
+│  │(2 rep)  │ │(2 rep)  │  per service       │
+│  └─────────┘ └─────────┘                    │
+└──────────────────────────────────────────────┘
+                   │
+          ┌────────┴────────┐
+     Cosmos DB        Service Bus
+     Redis            Key Vault
+     Blob Storage     App Insights
+     ACS              Azure OpenAI</div>
+
+<h2>8. Key Invariants</h2>
+
+<ol>
+  <li><strong>Tenant isolation:</strong> Every data access includes <code>tenantId</code> filter. No exceptions.</li>
+  <li><strong>Vet before send:</strong> No outbound message bypasses the vet pipeline (except emergency bypass with full audit).</li>
+  <li><strong>Kid inbound filtered:</strong> Every inbound message to a kid account runs the full filtering pipeline.</li>
+  <li><strong>Audit everything:</strong> Every state change produces an audit event with hash chain integrity.</li>
+  <li><strong>Idempotent sends:</strong> Every send operation uses an idempotency key. Duplicate calls return existing result.</li>
+  <li><strong>Deterministic first:</strong> Rule-based filters run before any LLM call to minimize cost and latency.</li>
+  <li><strong>Secrets never in DB:</strong> All credentials stored in Key Vault; DB stores only Key Vault references.</li>
+  <li><strong>Kid data minimal:</strong> COPPA-compliant: content storage off by default, auto-purge after retention window.</li>
+</ol>
+
+</div>
+
+<footer>MsgVet Architecture &mdash; v1.0.0 &mdash; April 6, 2026</footer>
+</body>
+</html>
