@@ -173,6 +173,7 @@ Build order: Kid &rarr; Adult &rarr; Corporate (one codebase, feature-gated)</p>
   <li><a href="#data-model">Data Model</a></li>
   <li><a href="#security">Security</a></li>
   <li><a href="#milestones">Milestones</a></li>
+  <li><a href="#shells">Branded Shells</a></li>
   <li><a href="#risks">Risks</a></li>
   <li><a href="#glossary">Glossary</a></li>
 </ol>
@@ -1089,8 +1090,101 @@ MessageEnvelope.encryption { enabled, method: NONE|SERVER_SIDE|CLIENT_E2E,
 <p>AES-256-GCM E2E, one-time pad with pad management UI, Vigenere (novelty), on-device vetting pre-encryption, key exchange UX. Not for kids. MVP <code>MessageEnvelope.encryption</code> field already in place.</p>
 </div>
 
-<!-- ===== 24. RISKS ===== -->
-<h2 id="risks">24. Risks</h2>
+<!-- ===== BRANDED SHELLS ===== -->
+<h2 id="shells">Branded Shells &mdash; One Engine, Many Faces</h2>
+
+<div class="callout vision">
+<strong>Platform play:</strong> MsgVet is an <strong>engine</strong> with a <strong>platform API</strong> that powers multiple branded frontends. Each shell is a thin native app with its own UX, branding, App Store listing, and market positioning &mdash; all backed by the same vet pipeline, policy engine, billing, and infrastructure.
+</div>
+
+<h3>Why Shells</h3>
+<div class="table-wrap"><table>
+<tr><th>Advantage</th><th>Description</th></tr>
+<tr><td>Market segmentation</td><td>Each brand targets a specific audience with tailored UX and messaging</td></tr>
+<tr><td>App Store optimization</td><td>Separate listings = separate keyword rankings, screenshots, reviews</td></tr>
+<tr><td>Feature gating</td><td>Each shell exposes only the features relevant to its audience</td></tr>
+<tr><td>Shared R&amp;D</td><td>One engine &mdash; every improvement benefits all shells</td></tr>
+<tr><td>White-label</td><td>Partners license the engine, ship under their own brand</td></tr>
+<tr><td>Reduced stigma</td><td>"Cheater phone" users won't download "Kid Safe Messaging" and vice versa</td></tr>
+</table></div>
+
+<h3>Shell Architecture</h3>
+<div class="mermaid-wrap">
+  <div class="mermaid-toolbar">
+    <button onclick="mermaidZoom(this,1.2)">Zoom +</button>
+    <button onclick="mermaidZoom(this,0.8)">Zoom &minus;</button>
+    <button onclick="mermaidReset(this)">Reset</button>
+    <button onclick="mermaidFullscreen(this)">Fullscreen</button>
+  </div>
+  <div class="mermaid-viewport">
+    <pre class="mermaid">
+flowchart TB
+  subgraph SHELLS["Branded Shells (thin native apps)"]
+    KS["KidShield\nKid safety"]
+    VC["VaultChat\nPrivacy / stealth"]
+    PG["PostGuard\nCeleb / influencer"]
+    MP["MsgVet Pro\nGeneral consumer"]
+    CV["CorpVet\nEnterprise"]
+    CM["CourtMode\nLegal disputes"]
+  end
+  subgraph SDK["Shared MsgVetSDK"]
+    AC[Auth + Messaging + Vet + Policy]
+    BC[Billing + Quarantine + Approvals]
+    SC[Scheduler + Channels + Vault + Encryption]
+  end
+  subgraph ENGINE["Platform API + Engine"]
+    SVC[All services - identical for every shell]
+    DATA[Cosmos DB + Service Bus + OpenAI + ACS]
+  end
+  SHELLS --> SDK
+  SDK --> ENGINE
+    </pre>
+  </div>
+</div>
+
+<h3>Shell Registry</h3>
+<div class="table-wrap"><table>
+<tr><th>Shell</th><th>Audience</th><th>Key Features</th><th>Vibe</th></tr>
+<tr><td><strong>KidShield</strong></td><td>Parents + kids</td><td>Inbound filtering, quarantine, parent dashboard, Watch alerts, COPPA</td><td>Colorful, playful kid UX. "Protect your child in 2 minutes."</td></tr>
+<tr><td><strong>VaultChat</strong></td><td>Privacy adults</td><td>Stealth vault front-and-center, duress PIN, aliases, encrypted chat, no-trace</td><td>Dark, minimal, security-forward. "Your conversations. Your rules."</td></tr>
+<tr><td><strong>PostGuard</strong></td><td>Celebrities, influencers</td><td>Public posting guard, AI rewrite, scheduling, approval workflows, multi-platform</td><td>Polished, media-savvy. "Never post something you'll regret."</td></tr>
+<tr><td><strong>MsgVet Pro</strong></td><td>General consumers</td><td>Full feature set: drunk guard, ex guard, regret controls, all packs</td><td>Clean, versatile. "Message smarter. Regret less."</td></tr>
+<tr><td><strong>CorpVet</strong></td><td>Organizations</td><td>Delegation, quorum approvals, audit, SSO, Teams/Slack, admin console</td><td>Professional, enterprise. "Governance for every message."</td></tr>
+<tr><td><strong>CourtMode</strong></td><td>Legal disputes</td><td>Immutable archive, tone enforcement, no-delete, export for attorneys</td><td>Formal, serious. "Every message documented."</td></tr>
+</table></div>
+
+<h3>What Shells Control vs Engine</h3>
+<div class="table-wrap"><table>
+<tr><th>Layer</th><th>Shell</th><th>Engine</th></tr>
+<tr><td>Brand / UX</td><td>Name, icon, colors, App Store listing</td><td>&mdash;</td></tr>
+<tr><td>Onboarding</td><td>Sign-up flow, tutorials, default packs</td><td>Auth, tenant creation</td></tr>
+<tr><td>Features</td><td>Which screens/tabs shown</td><td>All features exist; shell hides/shows</td></tr>
+<tr><td>Pricing</td><td>Shell-specific plan names</td><td>Same wallet + billing engine</td></tr>
+<tr><td>Notifications</td><td>Copy and priority tuning</td><td>Delivery infrastructure</td></tr>
+<tr><td>Watch</td><td>Brand-specific complications</td><td>Same Watch data API</td></tr>
+</table></div>
+
+<h3>Build Order</h3>
+<div class="table-wrap"><table>
+<tr><th>Phase</th><th>Shells</th></tr>
+<tr><td><span class="tag tag-green">MVP</span></td><td><strong>MsgVet Pro</strong> (general) + <strong>KidShield</strong> (kids) &mdash; proves the shell architecture</td></tr>
+<tr><td>Post-MVP 1</td><td><strong>CorpVet</strong> (enterprise) &mdash; after corporate features hardened</td></tr>
+<tr><td>Post-MVP 2</td><td><strong>VaultChat</strong> (privacy) + <strong>PostGuard</strong> (celeb) &mdash; after vault + posting guard proven</td></tr>
+<tr><td>Post-MVP 3</td><td><strong>CourtMode</strong> (legal) + white-label partner program</td></tr>
+</table></div>
+
+<h3>White-Label</h3>
+<div class="table-wrap"><table>
+<tr><th>Feature</th><th>Description</th></tr>
+<tr><td>Licensing</td><td>Partners license engine + SDK, ship their own brand</td></tr>
+<tr><td>Custom packs</td><td>Industry-specific policy packs (healthcare, finance, education)</td></tr>
+<tr><td>Revenue share</td><td>Partner shells use MsgVet billing; split per agreement</td></tr>
+<tr><td>Partner console</td><td>Usage analytics, revenue, user metrics, pack management</td></tr>
+<tr><td>Co-branding</td><td>"Powered by MsgVet" badge (optional, can hide for white-label)</td></tr>
+</table></div>
+
+<!-- ===== RISKS ===== -->
+<h2 id="risks">Risks</h2>
 <div class="table-wrap"><table>
 <tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr>
 <tr><td>iOS SMS impossible</td><td><span class="tag tag-red">HIGH</span></td><td>First-party chat primary; compose-through</td></tr>
@@ -1120,6 +1214,9 @@ MessageEnvelope.encryption { enabled, method: NONE|SERVER_SIDE|CLIENT_E2E,
 <tr><td>Duress PIN</td><td>Fake unlock PIN showing benign decoy screen</td></tr>
 <tr><td>OTP</td><td>One-Time Pad; unbreakable cipher where key length = message length</td></tr>
 <tr><td>Spontaneity</td><td>1&ndash;5 dial controlling AI variation/creativity in rewrites and auto-messages</td></tr>
+<tr><td>Shell</td><td>Branded thin native app powered by the shared MsgVet engine</td></tr>
+<tr><td>MsgVetSDK</td><td>Shared client SDK consumed by all shells (auth, messaging, vet, billing, vault, etc.)</td></tr>
+<tr><td>White-label</td><td>Partner-branded shell running on licensed MsgVet engine</td></tr>
 </table></div>
 
 </div>

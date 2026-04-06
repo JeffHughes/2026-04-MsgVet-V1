@@ -36,10 +36,11 @@
 25. [Data Model](#25-data-model)
 26. [Security Architecture](#26-security-architecture)
 27. [Build Order & Milestones](#27-build-order--milestones)
-28. [High-Leverage Ideas](#28-high-leverage-ideas)
-29. [Risks & Mitigations](#29-risks--mitigations)
-30. [Open Questions](#30-open-questions)
-31. [Glossary](#31-glossary)
+28. [Branded Shells — One Engine, Many Faces](#28-branded-shells--one-engine-many-faces)
+29. [High-Leverage Ideas](#29-high-leverage-ideas)
+30. [Risks & Mitigations](#30-risks--mitigations)
+31. [Open Questions](#31-open-questions)
+32. [Glossary](#32-glossary)
 
 ---
 
@@ -1622,7 +1623,134 @@ AuditEvent
 
 ---
 
-## 28. High-Leverage Ideas
+## 28. Branded Shells — One Engine, Many Faces
+
+> **Platform architecture:** MsgVet is not one app — it is an **engine** with a **platform API** that powers multiple branded frontends. Each shell is a thin native app (or web app) with its own UX, branding, onboarding, App Store presence, and marketing — all backed by the same vet pipeline, policy engine, quarantine, approvals, audit, billing, and channel modules.
+
+### 28.1 Why Branded Shells
+
+The same core capabilities serve radically different markets with different buying psychology, different App Store search terms, and different willingness to pay. A parent searching for "kid safe messaging" and a celebrity searching for "social media post reviewer" will never find the same app — but the engine behind both is identical.
+
+| Advantage | Description |
+|-----------|-------------|
+| **Market segmentation** | Each brand targets a specific audience with tailored messaging, UX, and pricing |
+| **App Store optimization** | Separate listings = separate keyword rankings, screenshots, reviews |
+| **Feature gating by brand** | Each shell exposes only the features relevant to its audience |
+| **Shared R&D cost** | One engine, one policy engine, one vet pipeline — every improvement benefits all shells |
+| **White-label opportunity** | Partners can license the engine and ship under their own brand |
+| **Reduced stigma** | "Cheater phone" users won't download an app branded "Kid Safe Messaging" and vice versa |
+
+### 28.2 Shell Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    BRANDED SHELLS                        │
+│  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌────────┐ │
+│  │ KidShield │ │ VaultChat │ │ PostGuard │ │CorpVet │ │
+│  │ (kids)    │ │ (privacy) │ │ (celeb)   │ │(enterp)│ │
+│  └─────┬─────┘ └─────┬─────┘ └─────┬─────┘ └───┬────┘ │
+└────────┼──────────────┼──────────────┼───────────┼──────┘
+         └──────────────┴──────┬───────┴───────────┘
+                               │
+┌──────────────────────────────┼──────────────────────────┐
+│                    PLATFORM API                          │
+│  Auth │ Messaging │ Vet │ Policy │ Quarantine │ Approvals│
+│  Scheduling │ Channels │ Billing │ Audit │ Notifications │
+└──────────────────────────────┼──────────────────────────┘
+                               │
+┌──────────────────────────────┼──────────────────────────┐
+│                    SHARED ENGINE                         │
+│  Same services, same data layer, same LLM pipeline      │
+│  Cosmos DB │ Service Bus │ Azure OpenAI │ ACS │ Redis   │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 28.3 Shell Registry
+
+| Shell | Brand Name (working) | Target Audience | Key Features Exposed | Default Policy Packs | Tone / UX |
+|-------|---------------------|-----------------|---------------------|---------------------|-----------|
+| **KidShield** | KidShield / SafeChat Kids | Parents + kids (under-17) | Inbound filtering, quarantine, parent dashboard, Watch alerts, family accounts | Kid Safe, Teen Safe | Colorful, playful kid UX. Parent side is clean dashboard. Onboarding: "Protect your child in 2 minutes." |
+| **VaultChat** | VaultChat / GhostLine | Privacy-focused adults | Stealth vault (front and center), duress PIN, alias numbers, encrypted chat, no-trace mode | No Sensitive Topics, stealth defaults on | Dark, minimal, security-forward. Onboarding: "Your conversations. Your rules. No traces." |
+| **PostGuard** | PostGuard / RepShield | Celebrities, influencers, public figures | Public posting guard, AI rewrite, tone shaping, scheduling, approval workflows, multi-platform posting | PR Safe, Brand Safe, Public Posting | Polished, media-savvy. Dashboard shows all social accounts. Onboarding: "Never post something you'll regret." |
+| **MsgVet Pro** | MsgVet / MsgVet Pro | General adult consumers | Full feature set: drunk guard, ex guard, regret controls, intent capture, all policy packs | Natural defaults, user picks | Clean, versatile. Onboarding: "Message smarter. Regret less." |
+| **CorpVet** | CorpVet / MsgVet Enterprise | Organizations | Delegation, quorum approvals, audit exports, SSO, compliance, admin console, Teams/Slack modules | C-level, Legal-safe, PR Safe, Sales | Professional, enterprise-grade. Admin console is primary. Onboarding: "Governance for every message." |
+| **CourtMode** | CourtMode / LegalShield | People in legal disputes | Message archiving, immutable audit trail, tone enforcement, no-delete mode, export for attorneys | Legal-safe, "Court Mode" pack | Serious, formal. Focus on evidence preservation. Onboarding: "Every message documented. Every tone measured." |
+
+### 28.4 What Each Shell Controls
+
+| Layer | Shell Controls | Engine Controls |
+|-------|---------------|-----------------|
+| **Brand** | App name, icon, colors, typography, App Store listing, marketing | — |
+| **Onboarding** | Sign-up flow, tutorials, initial policy pack selection | Auth, tenant creation |
+| **Feature visibility** | Which screens/tabs are shown, which settings are exposed | All features exist; shell just hides/shows |
+| **Default policies** | Which policy packs are pre-activated on account creation | Policy engine evaluates whatever is active |
+| **Pricing / plans** | Shell-specific plan names and pricing (maps to same billing tiers) | Wallet, metering, ledger |
+| **UX / tone** | Kid-friendly vs security-dark vs corporate-clean | — |
+| **Push notifications** | Notification copy and priority tuning per brand | Notification service delivers |
+| **Watch complications** | Brand-specific complication design and data shown | Same Watch data API |
+
+### 28.5 Shell as Thin Native App
+
+Each shell is a native app (SwiftUI / Compose) that:
+
+1. **Imports a shared SDK** (`MsgVetSDK`) containing: API client, real-time messaging layer, vet report rendering, policy evaluation cache, encryption layer, Watch connectivity.
+2. **Provides its own**: UI components, color theme, onboarding flow, feature flag config, App Store assets.
+3. **Calls the same Platform API** — no shell-specific backend endpoints. The API doesn't know or care which shell is calling (beyond an `X-Shell-Id` header for analytics).
+4. **Ships independently** — each shell has its own release cycle, App Store listing, and review process. Engine updates are consumed via SDK version bumps.
+
+### 28.6 Shell SDK
+
+```
+MsgVetSDK:
+  // Core
+  AuthClient — login, MFA, device trust, session
+  MessagingClient — chat, voice, presence, typing
+  VetClient — submit for vetting, get report, request rewrite
+  PolicyClient — load active policies, evaluate rules (client-side cache)
+  QuarantineClient — list, release, reject, batch actions
+  ApprovalClient — list pending, approve, reject, bypass
+  SchedulerClient — create/arm triggers, list pending, cancel
+  BillingClient — wallet balance, top-up, transaction history, plan info
+  AuditClient — query events (role-gated)
+  ChannelClient — list connected accounts, connect/disconnect
+  
+  // Privacy
+  VaultClient — unlock, list stealth conversations, duress mode
+  EncryptionClient — (Phase 3) key management, cipher selection, pad status
+  
+  // Platform
+  NotificationClient — register device/Watch, manage preferences
+  AliasClient — manage alias identities, proxy numbers
+  GeofenceClient — register/unregister fences, proximity checks
+  StateClient — report state changes, query recipient state (consent-gated)
+  
+  // Config
+  ShellConfig — feature flags, default policy packs, brand theme, onboarding flow ID
+```
+
+### 28.7 White-Label & Partner Program
+
+| Feature | Description |
+|---------|-------------|
+| **White-label licensing** | Partners license the engine + SDK, ship under their own brand with their own shell |
+| **Custom policy packs** | Partners can create industry-specific packs (healthcare, finance, education) |
+| **Revenue share** | Partner shells use MsgVet billing; revenue split configurable per agreement |
+| **Shared vs dedicated infra** | Standard: shared multi-tenant. Enterprise partners: dedicated Cosmos DB partition or separate instance |
+| **Partner console** | Web dashboard for partners: usage analytics, revenue, user metrics, policy pack management |
+| **Co-branding option** | "Powered by MsgVet" badge (optional, can be hidden for white-label) |
+
+### 28.8 Build Order for Shells
+
+| Phase | Shells | Notes |
+|-------|--------|-------|
+| **MVP (Milestones A-D)** | **MsgVet Pro** (general) + **KidShield** (kids) | Two shells from day one. Same codebase, different feature flags + themes. Proves the shell architecture. |
+| **Post-MVP Phase 1** | **CorpVet** (enterprise) | Add enterprise shell once corporate features (Milestone C) are hardened. |
+| **Post-MVP Phase 2** | **VaultChat** (privacy) + **PostGuard** (celeb) | Privacy shell after stealth vault is battle-tested. Celeb shell after public posting guard is proven. |
+| **Post-MVP Phase 3** | **CourtMode** (legal) + white-label program | Niche shells + partner licensing. |
+
+---
+
+## 29. High-Leverage Ideas
 
 | # | Idea | Impact | Effort |
 |---|------|--------|--------|
@@ -1639,7 +1767,7 @@ AuditEvent
 
 ---
 
-## 29. Risks & Mitigations
+## 30. Risks & Mitigations
 
 | Risk | Severity | Mitigation |
 |------|----------|-----------|
@@ -1655,7 +1783,7 @@ AuditEvent
 
 ---
 
-## 30. Open Questions
+## 31. Open Questions
 
 | # | Question | Options | Impact |
 |---|----------|---------|--------|
@@ -1672,7 +1800,7 @@ AuditEvent
 
 ---
 
-## 31. Glossary
+## 32. Glossary
 
 | Term | Definition |
 |------|-----------|
