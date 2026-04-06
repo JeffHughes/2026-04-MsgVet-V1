@@ -159,6 +159,7 @@ Build order: Kid &rarr; Adult &rarr; Corporate (one codebase, feature-gated)</p>
   <li><a href="#adult">Adult Guardrails</a></li>
   <li><a href="#corporate">Corporate Governance</a></li>
   <li><a href="#quarantine">Quarantine</a></li>
+  <li><a href="#stealth">Stealth Vault &amp; Duress PIN</a></li>
   <li><a href="#rules">Rule Hierarchy &amp; Policy Engine</a></li>
   <li><a href="#vetting">Vetting &amp; Visualization</a></li>
   <li><a href="#approvals">Approvals</a></li>
@@ -472,8 +473,54 @@ flowchart TD
 <tr><td>Kid accounts</td><td>Parent-only release (teen LOW self-release if policy allows)</td></tr>
 </table></div>
 
-<!-- ===== 11. RULE HIERARCHY ===== -->
-<h2 id="rules">11. Rule Hierarchy &amp; Policy Engine</h2>
+<!-- ===== 10.5 STEALTH VAULT ===== -->
+<h2 id="stealth">11. Stealth Vault &amp; Duress PIN</h2>
+
+<div class="callout critical">
+<strong>Not for kids.</strong> Stealth vault is blocked on all kid and teen accounts. Parents always have full visibility into kid communications.
+</div>
+
+<h3>Stealth Vault</h3>
+<div class="table-wrap"><table>
+<tr><th>Feature</th><th>Description</th></tr>
+<tr><td>Vault PIN</td><td>Separate PIN (not device PIN) to reveal hidden conversations. Without it, zero evidence they exist.</td></tr>
+<tr><td>Biometric option</td><td>Face ID / fingerprint as vault unlock (configurable; some prefer PIN-only for deniability).</td></tr>
+<tr><td>No traces</td><td>No push notifications, no badge counts, no lock screen previews, no search results, no recent contacts for stealth contacts.</td></tr>
+<tr><td>Hidden entry</td><td>Subtle gesture to access (pull-down, long-press logo, swipe). Nothing labeled "secret" or "vault."</td></tr>
+<tr><td>Self-destruct</td><td>Vault messages can auto-delete after read or after configurable time window.</td></tr>
+<tr><td>Local by default</td><td>Vault conversations device-local. Optional encrypted cloud backup with user-held key (server cannot read).</td></tr>
+<tr><td>Vet pipeline</td><td>Stealth messages still pass through vet (policy not bypassed). Vet reports vault-encrypted.</td></tr>
+</table></div>
+
+<h3>Duress PIN (Fake Unlock)</h3>
+<div class="callout warn">
+<strong>For situations where user is forced to unlock.</strong> A second PIN opens a benign, plausible screen. Zero indication a vault exists.
+</div>
+<div class="table-wrap"><table>
+<tr><th>Feature</th><th>Description</th></tr>
+<tr><td>Duress PIN</td><td>Second PIN that shows a clean, boring decoy screen instead of real vault.</td></tr>
+<tr><td>Decoy options</td><td>Configurable: empty app, normal-looking decoy conversations, settings page only.</td></tr>
+<tr><td>Indistinguishable</td><td>Under duress PIN, zero code paths reveal vault existence. No hidden menus.</td></tr>
+<tr><td>Audit log</td><td>Duress entry logged locally (encrypted). Only visible with real vault PIN.</td></tr>
+<tr><td>Brute force protection</td><td>5 attempts then lockout + device trust revoke. Argon2 hashing.</td></tr>
+</table></div>
+
+<h3>Client-Side Encryption (Phase 3+)</h3>
+<div class="callout">
+<strong>Later phase, but MVP is architected to accept it.</strong> <code>MessageEnvelope.encryption</code> field exists from day one. Not available on kid accounts.
+</div>
+<div class="table-wrap"><table>
+<tr><th>Feature</th><th>Description</th></tr>
+<tr><td>AES-256-GCM</td><td>Practical E2E encryption. Standard key exchange (Diffie-Hellman).</td></tr>
+<tr><td>One-Time Pad</td><td>True OTP: key = message length, never reused. In-person pad exchange (QR scan). Pad management UI.</td></tr>
+<tr><td>Vigenere</td><td>Educational / novelty cipher option.</td></tr>
+<tr><td>On-device vetting</td><td>Vet pipeline runs on plaintext <strong>on device before encryption</strong>. Server sees only ciphertext.</td></tr>
+<tr><td>Trade-off</td><td>Server cannot vet encrypted msgs. User accepts reduced safety for max privacy. Explicit consent.</td></tr>
+<tr><td>MVP prep</td><td><code>encryption: { enabled: false, method: SERVER_SIDE }</code> on every message now. Phase 3 flips it on.</td></tr>
+</table></div>
+
+<!-- ===== 12. RULE HIERARCHY ===== -->
+<h2 id="rules">12. Rule Hierarchy &amp; Policy Engine</h2>
 
 <div class="callout vision">
 <strong>Three-tier rule hierarchy:</strong> Global rules apply to everyone. Group rules (families, friends, work, custom) override globals. Individual contact rules are the most specific and override everything. Stricter always wins at the same level.
@@ -945,7 +992,11 @@ QuarantineRecord { id, tenantId, direction, message, vetReport, status, reviewed
 ApprovalWorkflow { id, messageId, mode, approvers[], quorum, sla, status }
 SmartSchedule { id, messageId, triggers[], triggerLogic: AND|OR, status, firedAt }
 RuleEntry { id, tenantId, scope: GLOBAL|GROUP|INDIVIDUAL, targetRef, conditions, action }
-AuditEvent { id, tenantId, eventType, actorId, payload, previousHash, hash, timestamp }</code></pre>
+AuditEvent { id, tenantId, eventType, actorId, payload, previousHash, hash, timestamp }
+StealthVault { userId, vaultPinHash, duressPinHash, unlockMethod, decoyConfig,
+               stealthContacts(encrypted), cloudBackup, selfDestructDefault }
+MessageEnvelope.encryption { enabled, method: NONE|SERVER_SIDE|CLIENT_E2E,
+                             clientCipher: null|AES_256_GCM|VIGENERE|OTP, keyRef, padId }</code></pre>
 
 <!-- ===== 22. SECURITY ===== -->
 <h2 id="security">22. Security</h2>
@@ -957,6 +1008,9 @@ AuditEvent { id, tenantId, eventType, actorId, payload, previousHash, hash, time
 <tr><td>Aliases</td><td>User-specific encryption, server-blind</td></tr>
 <tr><td>Isolation</td><td>Every query filtered by tenantId</td></tr>
 <tr><td>Rate limits</td><td>Per-tenant, per-user, per-endpoint</td></tr>
+<tr><td>Vault PIN</td><td>Argon2 hash, 5-attempt lockout, device trust revoke</td></tr>
+<tr><td>Duress PIN</td><td>Indistinguishable decoy screen, zero vault evidence under any code path</td></tr>
+<tr><td>Client E2E (Phase 3)</td><td>AES-256-GCM / OTP; on-device vet pre-encryption; server sees ciphertext only</td></tr>
 </table></div>
 
 <!-- ===== 23. MILESTONES ===== -->
@@ -967,7 +1021,7 @@ AuditEvent { id, tenantId, eventType, actorId, payload, previousHash, hash, time
 </div>
 <div class="milestone adult">
 <h4>B: Adult Consumer <span class="tag">Wk 9-14</span></h4>
-<p>Policy packs, regret controls, intent capture, smart scheduling (time + geofence + state), alias groups, VoIP, email adapter, Watch geofence triggers, auto-messages.</p>
+<p>Policy packs, regret controls, intent capture, smart scheduling (time + geofence + state), alias groups, VoIP, email adapter, Watch geofence triggers, auto-messages, stealth vault + duress PIN.</p>
 </div>
 <div class="milestone corp">
 <h4>C: Corporate <span class="tag tag-purple">Wk 15-20</span></h4>
@@ -976,6 +1030,11 @@ AuditEvent { id, tenantId, eventType, actorId, payload, previousHash, hash, time
 <div class="milestone" style="border-left:3px solid var(--warn)">
 <h4>D: Hardening &amp; Launch <span class="tag tag-warn">Wk 21-24</span></h4>
 <p>Load test (10K concurrent, 100K msgs/hr), security audit, COPPA review, app store + Watch store submissions, beta (500 families, 50 corp).</p>
+</div>
+
+<div class="milestone" style="border-left:3px solid var(--red)">
+<h4>Phase 3+: Client-Side Encryption</h4>
+<p>AES-256-GCM E2E, one-time pad with pad management UI, Vigenere (novelty), on-device vetting pre-encryption, key exchange UX. Not for kids. MVP <code>MessageEnvelope.encryption</code> field already in place.</p>
 </div>
 
 <!-- ===== 24. RISKS ===== -->
@@ -1005,6 +1064,10 @@ AuditEvent { id, tenantId, eventType, actorId, payload, previousHash, hash, time
 <tr><td>COPPA</td><td>Children's Online Privacy Protection Act</td></tr>
 <tr><td>LCR</td><td>Least-Cost Routing for SMS/voice</td></tr>
 <tr><td>A2P / 10DLC</td><td>App-to-person SMS via 10-digit long codes</td></tr>
+<tr><td>Stealth Vault</td><td>Hidden conversation space; no UI traces without vault PIN</td></tr>
+<tr><td>Duress PIN</td><td>Fake unlock PIN showing benign decoy screen</td></tr>
+<tr><td>OTP</td><td>One-Time Pad; unbreakable cipher where key length = message length</td></tr>
+<tr><td>Spontaneity</td><td>1&ndash;5 dial controlling AI variation/creativity in rewrites and auto-messages</td></tr>
 </table></div>
 
 </div>

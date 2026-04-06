@@ -646,6 +646,102 @@ AliasIdentity:
 - Cloud sync: only encrypted blob + group ID. Server cannot read alias labels.
 - Export: alias labels included only in local export; cloud export uses group IDs.
 
+### 13.4 Stealth Vault
+
+> **Requirement:** Certain conversations must leave no visible trace on the device unless the user explicitly unlocks them. Use cases: attorney-client privilege, confidential business, private relationships — whatever the user needs hidden.
+
+#### Vault Access
+
+| Feature | Description |
+|---------|-------------|
+| **Vault PIN** | Separate PIN (not device PIN) required to reveal stealth conversations. Without it, no evidence these conversations exist. |
+| **Biometric option** | Face ID / fingerprint as vault unlock (configurable; some users prefer PIN-only for deniability). |
+| **No notification traces** | Stealth contacts produce no visible push notifications, no badge counts, no lock screen previews. Messages arrive silently. |
+| **No app evidence** | Stealth conversations don't appear in the inbox, search results, recent contacts, or any UI surface until vault is unlocked. |
+| **Hidden contact list** | Stealth contacts don't appear in the main contact list or any auto-complete suggestions. |
+| **Vault indicator** | Subtle, configurable entry point (e.g., pull-down gesture, long-press on logo, swipe on specific UI element). Nothing labeled "secret" or "vault." |
+
+#### Duress PIN (Fake Unlock)
+
+| Feature | Description |
+|---------|-------------|
+| **Duress PIN** | A second PIN that opens a benign, plausible screen instead of the real vault. For situations where the user is forced to unlock. |
+| **Benign screen** | Shows a clean, boring view: empty inbox, settings page, or a configurable decoy view with normal-looking conversations. |
+| **No vault evidence** | Under duress PIN, there is zero indication that a vault exists. No hidden menus, no "unlock real vault" option. |
+| **Audit logging** | Duress PIN entry is logged locally (encrypted) so the user can later verify if their device was compromised. Log is only visible with real vault PIN. |
+| **Configurable decoy** | User can configure what the duress screen shows: empty app, a set of decoy conversations, settings only, etc. |
+
+#### Vault Rules
+
+| Rule | Description |
+|------|-------------|
+| **No kids** | Stealth vault is not available on kid accounts (under-13 or teen). Parents always have visibility into kid communications. |
+| **No corporate override** | Org admins cannot force vault access. Vault is personal-only. Corporate audit applies to non-vault messages. |
+| **Vault + vet pipeline** | Stealth messages still pass through the vet pipeline (policy enforcement is not bypassed). Vet reports for vault messages are stored encrypted and only visible in vault. |
+| **Vault + quarantine** | If a vault message triggers quarantine, the quarantine entry is also vault-hidden. Only the vault user sees it. |
+| **Self-destruct option** | Vault messages can be configured to auto-delete after read or after a time window. |
+| **No cloud sync (default)** | Vault conversations are device-local by default. Optional encrypted cloud backup with user-held key (server cannot read). |
+
+#### Stealth Vault Data Model
+
+```
+StealthVault:
+  userId: uuid
+  vaultPinHash: string (bcrypt/argon2)
+  duressPinHash: string (bcrypt/argon2)
+  unlockMethod: PIN_ONLY | PIN_OR_BIOMETRIC
+  decoyConfig:
+    type: EMPTY_APP | DECOY_CONVERSATIONS | SETTINGS_ONLY
+    decoyConversations: ConversationRef[] | null
+  stealthContacts: ContactRef[] (encrypted, local-only)
+  conversations: ConversationRef[] (encrypted, local-only by default)
+  cloudBackup: boolean (default: false)
+  cloudBackupKey: string | null (user-held, never on server)
+  selfDestructDefault: { afterRead: boolean, afterHours: number | null }
+  duressLog: DuressEntry[] (encrypted, vault-only visible)
+```
+
+### 13.5 Client-Side Encryption (Phase 3+)
+
+> **Later phase, but the app must be architected to accept it from day one.** Not available on kid accounts.
+
+#### Design
+
+| Feature | Description |
+|---------|-------------|
+| **Encryption layer** | Optional client-side E2E encryption that wraps messages before they enter the vet pipeline. When enabled, the server sees only ciphertext. |
+| **Cipher options (phase 3)** | Vigenere cipher (educational/novelty), one-time pad (OTP) for maximum security, AES-256-GCM for practical E2E. |
+| **Key exchange** | Out-of-band key exchange for OTP (physical exchange, QR code scan in person). Standard Diffie-Hellman for AES. |
+| **One-time pad** | True OTP: key material = message length, never reused. Pad management UI: generate, share (in person), track remaining pad, warn when low. |
+| **Vet pipeline interaction** | When client-side encryption is active, the vet pipeline operates on the plaintext **on-device before encryption**. Server-side vetting is disabled for these messages. Policy enforcement is client-side only. |
+| **Trade-off** | Server cannot vet encrypted messages. Users accept reduced safety guarantees in exchange for maximum privacy. Explicit consent required. |
+| **Not for kids** | Client-side encryption is blocked on kid and teen accounts. Parent visibility requires server-side access. |
+| **Indicator** | Messages sent with client-side encryption show a lock icon. Recipient must have the corresponding key to decrypt. |
+
+#### Architecture Prep (MVP)
+
+The MVP message pipeline must accommodate client-side encryption from day one:
+
+```
+MessageEnvelope:
+  content: string | EncryptedBlob
+  encryption:
+    enabled: boolean
+    method: NONE | SERVER_SIDE | CLIENT_E2E
+    clientCipher: null | AES_256_GCM | VIGENERE | OTP
+    keyRef: string | null (local key reference, never transmitted)
+    padId: string | null (for OTP: which pad segment was used)
+  vetReport:
+    source: SERVER | CLIENT_SIDE | NONE
+    // SERVER = normal pipeline; CLIENT_SIDE = vetted on device pre-encryption; NONE = encryption bypassed vetting
+```
+
+This means:
+1. `MessageEnvelope.encryption` field exists from MVP — just always set to `{ enabled: false, method: SERVER_SIDE }` for now.
+2. Vet pipeline checks `encryption.method` — if `CLIENT_E2E`, skip server vetting (already done on device).
+3. Quarantine, approvals, audit still function — they just operate on metadata (sender, recipient, timestamp, policy match) rather than content.
+4. When Phase 3 ships, clients start populating `encryption` with real values. No server changes needed.
+
 ---
 
 ## 14. Vetting Engine & Visualization
@@ -1349,6 +1445,9 @@ AuditEvent
 | Data exfiltration via export API | Role-gated, rate-limited, audit-logged exports |
 | Provider credential leak | Key Vault + short-lived tokens + rotation alerts |
 | Insider access to kid data | Audit logs on all data access, principle of least privilege |
+| Vault PIN brute force | Rate limiting (5 attempts, then lockout + device trust revoke), argon2 hashing |
+| Duress detection by adversary | Duress screen is indistinguishable from normal app; no "vault exists" indicator under any code path |
+| Client-side encryption key compromise | OTP pads are device-local, never transmitted; AES keys rotatable; pad exhaustion warnings |
 
 ---
 
@@ -1379,6 +1478,7 @@ AuditEvent
 | Intent capture + rewrite | Compose flow with intent selection + AI rewrites |
 | Scheduling service | Scheduled sends with delivery verification |
 | Alias groups + stealth mode | Sensitive group management, privacy |
+| Stealth vault + duress PIN | Hidden conversations, vault access, duress fake screen |
 | First-party voice (VoIP) | Basic VoIP calling via ACS |
 | Email adapter | IMAP/SMTP integration (Gmail, Outlook) |
 | Alias phone numbers | Proxy number provisioning, routing |
@@ -1405,6 +1505,17 @@ AuditEvent
 | App store submissions | iOS App Store + Google Play review |
 | Documentation | API docs, integration guides, parent guides |
 | Beta program | 500 families, 50 corporate accounts |
+
+### Phase 3+: Client-Side Encryption
+
+| Deliverable | Details |
+|-------------|---------|
+| Client-side E2E encryption | AES-256-GCM practical E2E, on-device vetting before encryption |
+| One-time pad (OTP) | True OTP with pad management UI, in-person key exchange |
+| Vigenere cipher | Educational/novelty option |
+| Key management UI | Generate, share (QR), track pad usage, rotation |
+
+> **Note:** MVP `MessageEnvelope.encryption` field is pre-built to accept this. No server changes needed when Phase 3 ships. Not available on kid accounts.
 
 ---
 
