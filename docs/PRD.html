@@ -426,6 +426,20 @@ flowchart TD
 <tr><td>State toggle</td><td>Manual: drunk, angry, upset mode</td></tr>
 </table></div>
 
+<h3>Force-MsgVet Channel</h3>
+<div class="callout vision">
+<strong>Highest-leverage safety feature.</strong> When both parties are on MsgVet, every message is fully vetted, quarantinable, and audited &mdash; with near-zero per-message cost.
+</div>
+<div class="table-wrap"><table>
+<tr><th>Feature</th><th>Description</th></tr>
+<tr><td>Per-contact enforcement</td><td>"This person must message me through MsgVet" &mdash; external messages bounced with invite link</td></tr>
+<tr><td>Per-group enforcement</td><td>"My kids can only message through MsgVet" &mdash; ensures full vet coverage</td></tr>
+<tr><td>Invite flow</td><td>Contact receives: "X requests you communicate through MsgVet. [Download]"</td></tr>
+<tr><td>Mutual enforcement</td><td>Both parties agree to MsgVet-only = exclusive channel</td></tr>
+<tr><td>Parent override</td><td>Parents force all kid comms through MsgVet &mdash; no external channels</td></tr>
+<tr><td>Corporate policy</td><td>Org admins require MsgVet-only for specific roles or external contacts</td></tr>
+</table></div>
+
 <!-- ===== 9. CORPORATE ===== -->
 <h2 id="corporate">9. Corporate Governance</h2>
 <h3>Delegation</h3>
@@ -549,6 +563,33 @@ flowchart TD
 <tr><td>Thread timeline</td><td>Tone drift graph (escalation detection)</td></tr>
 <tr><td>Vet drawer</td><td>Slide-out: scores, tags, matched rules, rewrites</td></tr>
 </table></div>
+
+<h3>Anti-Duplicate AI Detection</h3>
+<div class="callout warn">
+<strong>Problem:</strong> AI rewrites and auto-messages become repetitive. "Sounds good, thanks!" every time, or identical "Just leaving work" texts daily, feels robotic.
+</div>
+<div class="table-wrap"><table>
+<tr><th>Feature</th><th>Description</th></tr>
+<tr><td>Duplicate detection</td><td>Track recent AI output per conversation. Flag if &gt;85% similar (embedding distance) to recent sends.</td></tr>
+<tr><td>Force variation</td><td>On flag: re-prompt model with recent messages as negative examples.</td></tr>
+<tr><td>Auto-message rotation</td><td>Never send exact same auto-text twice in a row. Rotate through variations.</td></tr>
+<tr><td>User visibility</td><td>"This is similar to what you sent last time. Try a different version?"</td></tr>
+<tr><td>Scope</td><td>Per-contact, per-conversation. Same text to different people is fine.</td></tr>
+</table></div>
+
+<h3>Spontaneity Setting</h3>
+<div class="callout vision">
+<strong>The spontaneity dial</strong> controls how varied, creative, and personality-rich AI content is &mdash; across rewrites, auto-messages, and suggestions. Set per policy profile, per contact override.
+</div>
+<div class="table-wrap"><table>
+<tr><th>Level</th><th>Name</th><th>Behavior</th></tr>
+<tr><td>1</td><td><strong>Robotic</strong></td><td>Max consistency. Same structure. Corporate-safe. Legal/compliance.</td></tr>
+<tr><td>2</td><td><strong>Steady</strong></td><td>Slight word variation, consistent tone. Professional default.</td></tr>
+<tr><td>3</td><td><strong>Natural</strong> (default)</td><td>Human-like variation. Different phrasings, occasional personality.</td></tr>
+<tr><td>4</td><td><strong>Playful</strong></td><td>Creative. Humor, casual, varied structures. Friends/family.</td></tr>
+<tr><td>5</td><td><strong>Surprise me</strong></td><td>Max variation. Creative openers, unexpected phrasings, personality-rich.</td></tr>
+</table></div>
+<p>Maps to LLM temperature + system prompt modifiers. Works with anti-dup: higher spontaneity = naturally varied output. Per-contact override available.</p>
 
 <!-- ===== 13. APPROVALS ===== -->
 <h2 id="approvals">13. Approvals</h2>
@@ -726,6 +767,21 @@ flowchart TD
 <tr><td>Route started (nav active)</td><td>"On my way, ETA [X] min"</td><td>Configurable</td></tr>
 <tr><td>Flight landed (state change)</td><td>"Just landed"</td><td>Configurable</td></tr>
 <tr><td>Workout ended</td><td>"Done at the gym"</td><td>Configurable</td></tr>
+</table></div>
+
+<h3>Proximity-Aware Auto-Response Suppression</h3>
+<div class="callout warn">
+<strong>Rule:</strong> If sender and recipient are physically near each other, suppress auto-responses. You don't need a "just leaving" text if you're standing next to the person.
+</div>
+<div class="table-wrap"><table>
+<tr><th>Feature</th><th>Description</th></tr>
+<tr><td>Proximity radius</td><td>Configurable per contact/group (default: 1 mile). Within radius = auto-responses suppressed.</td></tr>
+<tr><td>Detection</td><td>Compare sender GPS (phone/watch) vs recipient last known location. Bluetooth proximity where available.</td></tr>
+<tr><td>Scope</td><td>Only auto-messages and AI responses suppressed. Manual sends always go through.</td></tr>
+<tr><td>Override</td><td>User can "Send anyway" within proximity.</td></tr>
+<tr><td>Privacy</td><td>Proximity check on-device where possible. Server sees only "within threshold: yes/no."</td></tr>
+<tr><td>Watch integration</td><td>Watch GPS is primary (always on wrist). Phone GPS fallback.</td></tr>
+<tr><td>Examples</td><td>At dinner with spouse &rarr; "I'm here" suppressed. Same office &rarr; "on my way" suppressed.</td></tr>
 </table></div>
 
 <h3>Delivery Pipeline</h3>

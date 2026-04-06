@@ -397,7 +397,23 @@ Quarantined Message
 | **Buddy check** | Escalate to designated approver for specific contacts/times |
 | **State toggle** | User manually activates modes (drunk, angry, upset) for enhanced guardrails |
 
-### 9.3 Tone & Intent Capture
+### 9.3 Force-MsgVet Channel
+
+Users can require specific contacts or groups to communicate **only through MsgVet's first-party channel**:
+
+| Feature | Description |
+|---------|-------------|
+| **Per-contact enforcement** | "This person must message me through MsgVet" — external messages from them are bounced with an invite link |
+| **Per-group enforcement** | "My kids can only message through MsgVet" — ensures full vet coverage on every message |
+| **Invite flow** | Contact receives SMS/email: "X has requested you communicate through MsgVet. [Download / Open]" |
+| **Fallback behavior** | If contact hasn't joined, messages are held; sender sees "Waiting for [Name] to join MsgVet" |
+| **Mutual enforcement** | Both parties can agree to MsgVet-only, making it the exclusive channel |
+| **Parent override** | Parents can force all kid communications through MsgVet — no external channels allowed |
+| **Corporate policy** | Org admins can require MsgVet-only for specific roles, teams, or external contacts |
+
+This is the highest-leverage safety feature: when both parties are on MsgVet, every message (inbound AND outbound) is fully vetted, quarantinable, and audited — with near-zero per-message cost.
+
+### 9.4 Tone & Intent Capture
 
 **Compose flow:**
 1. User selects intent: apology / decline / request / update / congratulation / complaint
@@ -563,14 +579,17 @@ RuleMatrixEntry:
     combinationLogic: AND | OR (for multi-condition triggers)
     direction: INBOUND | OUTBOUND | BOTH
   action:
-    type: ALLOW | WARN | BLOCK | REQUIRE_APPROVAL | REQUIRE_QUORUM | SCHEDULE_ONLY | REWRITE_REQUIRED | HOLD_UNTIL_STATE_CHANGE | HOLD_UNTIL_GEOFENCE
+    type: ALLOW | WARN | BLOCK | REQUIRE_APPROVAL | REQUIRE_QUORUM | SCHEDULE_ONLY | REWRITE_REQUIRED | HOLD_UNTIL_STATE_CHANGE | HOLD_UNTIL_GEOFENCE | FORCE_MSGVET_CHANNEL
     params:
       cooldownSeconds: number | null
       holdUntil: StateTrigger | GeoTrigger | TimeTrigger | CombinationTrigger | null
       approverRoles: string[] | null
       quorumConfig: { required: number, pool: UserRef[] } | null
       rewriteMode: MINIMAL | PROFESSIONAL | EMPATHETIC | SHORT | SAFE | null
+      spontaneityLevel: 1-5 | null (1=robotic, 3=natural default, 5=surprise me)
       autoMessage: { template: string, triggerOn: GeoEvent | StateEvent } | null
+      proximitySuppress: { radiusMeters: number, suppressAutoOnly: boolean } | null
+      forceMsgVetChannel: boolean | null
   priority: number
   enabled: boolean
 ```
@@ -676,6 +695,40 @@ VetReport:
 | **Thread timeline** | Tone drift graph over conversation (escalation detection) |
 | **Vet report drawer** | Slide-out panel with full scores, tags, matched rules |
 | **Cost indicator** | Per-message AI cost (admin view) |
+
+### 14.3 Anti-Duplicate AI Detection
+
+> **Problem:** AI-generated rewrites and auto-messages can become repetitive. Sending "Sounds good, thanks!" to every message, or "Just leaving work now" with identical wording every day, feels robotic and erodes trust.
+
+| Feature | Description |
+|---------|-------------|
+| **Duplicate detection** | Track recent AI-generated messages per conversation and per contact. Flag when a rewrite or auto-message is too similar to one sent in the last N messages or T hours. |
+| **Similarity threshold** | Configurable: if AI output is > 85% similar (embedding distance) to a recent send in the same conversation, flag it. |
+| **On flag: force variation** | Re-prompt the model with "You recently sent a similar message. Vary your response." Include recent message history as negative examples. |
+| **Auto-message rotation** | Auto-messages ("I'm here," "just leaving") rotate through configured variations, never sending the exact same text twice in a row. |
+| **User visibility** | If a rewrite is flagged as duplicate, show: "This is similar to what you sent last time. Try a different version?" with alternatives. |
+| **Scope** | Per-contact and per-conversation. Sending "Sounds good" to your boss and your friend in the same hour is fine — sending it to the same person 3 times is not. |
+
+### 14.4 Spontaneity Setting
+
+> **Problem:** Some users want AI responses to be predictable and safe. Others want variety, personality, and surprise. One size does not fit all.
+
+The **spontaneity dial** controls how varied, creative, and personality-rich AI-generated content is — across rewrites, auto-messages, and suggestions.
+
+| Level | Name | Behavior |
+|-------|------|----------|
+| **1** | **Robotic** | Maximum consistency. Same structure every time. Corporate-safe. Minimal variation. Ideal for legal, compliance, formal corporate. |
+| **2** | **Steady** | Slight variation in wording but consistent tone and structure. Default for professional mode. |
+| **3** | **Natural** (default) | Human-like variation. Different phrasings, occasional personality. Good for most adult consumer use. |
+| **4** | **Playful** | More creative. Uses humor, casual language, varied sentence structures. Good for friends/family. |
+| **5** | **Surprise me** | Maximum variation. Creative openers, unexpected phrasings, emoji suggestions, personality-rich. Auto-messages are never boring. |
+
+**Implementation:**
+- Maps to LLM temperature + system prompt modifiers.
+- Spontaneity is set per policy profile (so "Work" can be Steady while "Friends" is Playful).
+- Also affects auto-message template selection — higher spontaneity = more variation in "I'm here" / "just leaving" messages.
+- Works with anti-duplicate detection: higher spontaneity + anti-dup = naturally varied output.
+- Per-contact override available (e.g., "Be playful with Sarah, steady with my boss").
 
 ---
 
@@ -893,6 +946,20 @@ To add a new channel (e.g., Telegram, WeChat):
 | Workout ended | "Done at the gym" | Configurable |
 
 All auto-messages pass through the vet pipeline before send.
+
+### 18.3 Proximity-Aware Auto-Response Suppression
+
+> **Rule:** If the sender and recipient are physically near each other, suppress auto-responses. You don't need a "just leaving now" text if you're standing next to the person.
+
+| Feature | Description |
+|---------|-------------|
+| **Proximity radius** | Configurable per contact/group (default: 1 mile / 1.6 km). If within radius, auto-responses are suppressed. |
+| **Detection method** | Compare sender GPS (phone/watch) against recipient's last known location (shared location / presence). Bluetooth proximity where available. |
+| **Suppression scope** | Only auto-messages and AI-generated responses are suppressed. Manual sends always go through. |
+| **Override** | User can force-send even within proximity ("Send anyway"). |
+| **Privacy** | Proximity check runs on-device where possible. Server only sees "within threshold: yes/no" — not raw coordinates of both parties. |
+| **Watch integration** | Watch GPS is primary proximity source (always on wrist). Phone GPS as fallback. |
+| **Examples** | At dinner with spouse → "I'm here" auto-message suppressed. In same office as coworker → "On my way" suppressed. At kid's school → parent auto-responses suppressed. |
 
 ### 18.3 Smart Schedule Data Model
 
